@@ -4,7 +4,7 @@
   <img align="right" src="https://upload.wikimedia.org/wikipedia/commons/thumb/0/04/Terraform_Logo.svg/2560px-Terraform_Logo.svg.png" alt="Terraform" width="120px">
 </a>
 
-<a href="https://anna.money/?utm_source=terraform&utm_medium=docs" target="_blank">
+<a href="https://anna.money/?utm_source=terraform&utm_medium=referral&utm_campaign=docs" target="_blank">
   <img align="right" src="https://upload.wikimedia.org/wikipedia/commons/a/aa/ANNA_Money_Logo_PNG.png" alt="ANNA Money" width="80px">
 </a>
 
@@ -23,7 +23,7 @@ The Terraform provider for [OpenVPN Cloud](https://openvpn.net/cloud-vpn/?utm_so
 
 This provider plugin is maintained by:
 -	OpenVPN team at [OpenVPN Cloud](https://openvpn.net/cloud-vpn/?utm_source=terraform&utm_medium=docs)
--	SRE Team at [ANNA Money](https://anna.money/?utm_source=terraform&utm_medium=docs) / [GitHub ANNA Money](http://github.com/anna-money/)
+-	SRE Team at [ANNA Money](https://anna.money/?utm_source=terraform&utm_medium=referral&utm_campaign=docs) / [GitHub ANNA Money](http://github.com/anna-money/)
 - [@patoarvizu](https://github.com/patoarvizu)
 
 ## Requirements
