@@ -1,15 +1,14 @@
 version: 2
 updates:
-  - package-ecosystem: "gomod"
+  - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
-      interval: "weekly"
+      interval: "daily"
+  - package-ecosystem: "gomod"
+    directory: "/"
     ignore:
-      # Ignore version updates
-      - dependency-name: "*"
-        update-types:
-          [
-            "version-update:semver-major",
-            "version-update:semver-minor",
-            "version-update:semver-patch",
-          ]
+      - dependency-name: "github.com/hashicorp/go-hclog"
+      - dependency-name: "golang.org/x/tools"
+      - dependency-name: "google.golang.org/grpc"
+    schedule:
+      interval: "daily"
