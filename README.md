@@ -1,11 +1,15 @@
 # Terraform Provider OpenVPN Cloud
 
+<a href="https://www.terraform.io/" target="_blank">
+  <img align="right" src="https://upload.wikimedia.org/wikipedia/commons/thumb/0/04/Terraform_Logo.svg/2560px-Terraform_Logo.svg.png" alt="Terraform" width="150px">
+</a>
+
 <a href="https://anna.money/?utm_source=terraform&utm_medium=docs" target="_blank">
-  <img align="right" src="https://upload.wikimedia.org/wikipedia/commons/a/aa/ANNA_Money_Logo_PNG.png" alt="anna-money" width="80px">
+  <img align="right" src="https://upload.wikimedia.org/wikipedia/commons/a/aa/ANNA_Money_Logo_PNG.png" alt="ANNA Money" width="80px">
 </a>
 
 <a href="https://openvpn.net/cloud-vpn/?utm_source=terraform&utm_medium=docs" target="_blank">
-  <img align="right" src="https://upload.wikimedia.org/wikipedia/commons/thumb/f/f5/OpenVPN_logo.svg/2560px-OpenVPN_logo.svg.png" alt="openvpn-cloud" width="150px">
+  <img align="right" src="https://upload.wikimedia.org/wikipedia/commons/thumb/f/f5/OpenVPN_logo.svg/2560px-OpenVPN_logo.svg.png" alt="OpenVPN" width="150px">
 </a>
 
 - [Website OpenVPN Cloud](https://openvpn.net/cloud-vpn/?utm_source=terraform&utm_medium=docs)
