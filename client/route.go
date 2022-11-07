@@ -14,6 +14,7 @@ type Route struct {
 	Domain        string `json:"domain"`
 	Value         string `json:"value"`
 	NetworkItemId string `json:"networkItemId"`
+	Description   string `json:"description"`
 }
 
 const (

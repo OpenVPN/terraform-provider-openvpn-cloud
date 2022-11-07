@@ -3,10 +3,10 @@ package openvpncloud
 import (
 	"context"
 
+	"github.com/OpenVPN/terraform-provider-openvpn-cloud/client"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
-	"github.com/patoarvizu/terraform-provider-openvpn-cloud/client"
 )
 
 func resourceUser() *schema.Resource {
@@ -53,6 +53,12 @@ func resourceUser() *schema.Resource {
 				ForceNew:    true,
 				Description: "The UUID of a user's group.",
 			},
+			"role": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				ForceNew:    true,
+				Description: "The type of user role. Valid values are `ADMIN`, `MEMBER`, or `OWNER`.",
+			},
 			"devices": {
 				Type:        schema.TypeList,
 				Optional:    true,
@@ -98,6 +104,7 @@ func resourceUserCreate(ctx context.Context, d *schema.ResourceData, m interface
 	firstName := d.Get("first_name").(string)
 	lastName := d.Get("last_name").(string)
 	groupId := d.Get("group_id").(string)
+	role := d.Get("role").(string)
 	configDevices := d.Get("devices").([]interface{})
 	var devices []client.Device
 	for _, d := range configDevices {
@@ -120,6 +127,7 @@ func resourceUserCreate(ctx context.Context, d *schema.ResourceData, m interface
 		LastName:  lastName,
 		GroupId:   groupId,
 		Devices:   devices,
+		Role:      role,
 	}
 	user, err := c.CreateUser(u)
 	if err != nil {
@@ -150,6 +158,7 @@ func resourceUserRead(ctx context.Context, d *schema.ResourceData, m interface{}
 		d.Set("last_name", u.LastName)
 		d.Set("group_id", u.GroupId)
 		d.Set("devices", u.Devices)
+		d.Set("role", u.Role)
 	}
 	return diags
 }
