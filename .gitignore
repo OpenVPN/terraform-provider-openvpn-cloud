@@ -1,0 +1,30 @@
+bin/
+dist/
+modules-dev/
+/pkg/
+.vagrant/
+.terraform/
+.idea
+
+*.dll
+*.exe
+.DS_Store
+example.tf
+terraform.tfplan
+terraform.tfstate
+*.backup
+./*.tfstate
+*.log
+*.bak
+*~
+.*.swp
+*.iml
+*.test
+*.iml
+
+# Binaries
+terraform-provider-sentry
+main
+
+# Keep windows files with windows line endings
+*.winfile eol=crlf
