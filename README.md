@@ -16,6 +16,7 @@ Maintainers
 This provider plugin is maintained by 
 -	The OpenVPN team at [OpenVPN Cloud](https://openvpn.net/cloud-vpn/)
 -	SRE Team at [ANNA Money](https://anna.money/)
+-   https://github.com/patoarvizu
 
 Requirements
 ------------
