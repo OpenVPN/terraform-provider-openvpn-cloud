@@ -5,9 +5,9 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/OpenVPN/terraform-provider-openvpn-cloud/client"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"github.com/patoarvizu/terraform-provider-openvpn-cloud/client"
 )
 
 func dataSourceNetwork() *schema.Resource {

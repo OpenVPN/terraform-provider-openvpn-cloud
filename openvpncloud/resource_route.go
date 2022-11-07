@@ -3,16 +3,17 @@ package openvpncloud
 import (
 	"context"
 
+	"github.com/OpenVPN/terraform-provider-openvpn-cloud/client"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
-	"github.com/patoarvizu/terraform-provider-openvpn-cloud/client"
 )
 
 func resourceRoute() *schema.Resource {
 	return &schema.Resource{
 		Description:   "Use `openvpncloud_route` to create a route on an OpenVPN Cloud network.",
 		CreateContext: resourceRouteCreate,
+		UpdateContext: resourceRouteCreate,
 		ReadContext:   resourceRouteRead,
 		DeleteContext: resourceRouteDelete,
 		Importer: &schema.ResourceImporter{
@@ -38,6 +39,10 @@ func resourceRoute() *schema.Resource {
 				ForceNew:    true,
 				Description: "The id of the network on which to create the route.",
 			},
+			"description": {
+				Type:     schema.TypeString,
+				Optional: true,
+			},
 		},
 	}
 }
@@ -48,9 +53,11 @@ func resourceRouteCreate(ctx context.Context, d *schema.ResourceData, m interfac
 	networkItemId := d.Get("network_item_id").(string)
 	routeType := d.Get("type").(string)
 	routeValue := d.Get("value").(string)
+	descriptionValue := d.Get("description").(string)
 	r := client.Route{
-		Type:  routeType,
-		Value: routeValue,
+		Type:        routeType,
+		Value:       routeValue,
+		Description: descriptionValue,
 	}
 	route, err := c.CreateRoute(networkItemId, r)
 	if err != nil {
