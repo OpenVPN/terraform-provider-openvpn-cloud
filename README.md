@@ -27,7 +27,7 @@ Requirements
 Building The Provider
 ---------------------
 
-Clone repository to: `$GOPATH/src/github.com/terraform-providers/terraform-provider-archive`
+Clone repository to: `$GOPATH/src/github.com/OpenVPN/terraform-provider-openvpn-cloud`
 
 ```sh
 $ mkdir -p $GOPATH/src/github.com/OpenVPN; cd $GOPATH/src/github.com/OpenVPN
