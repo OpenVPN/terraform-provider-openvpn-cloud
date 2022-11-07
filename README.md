@@ -1,7 +1,7 @@
 # Terraform Provider OpenVPN Cloud
 
 <a href="https://www.terraform.io/" target="_blank">
-  <img align="right" src="https://upload.wikimedia.org/wikipedia/commons/thumb/0/04/Terraform_Logo.svg/2560px-Terraform_Logo.svg.png" alt="Terraform" width="150px">
+  <img align="right" src="https://upload.wikimedia.org/wikipedia/commons/thumb/0/04/Terraform_Logo.svg/2560px-Terraform_Logo.svg.png" alt="Terraform" width="120px">
 </a>
 
 <a href="https://anna.money/?utm_source=terraform&utm_medium=docs" target="_blank">
