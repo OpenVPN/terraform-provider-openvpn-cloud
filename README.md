@@ -22,56 +22,57 @@ The Terraform provider for [OpenVPN Cloud](https://openvpn.net/cloud-vpn/?utm_so
 ## Maintainers
 
 This provider plugin is maintained by:
--	OpenVPN team at [OpenVPN Cloud](https://openvpn.net/cloud-vpn/?utm_source=terraform&utm_medium=docs)
--	SRE Team at [ANNA Money](https://anna.money/?utm_source=terraform&utm_medium=referral&utm_campaign=docs) / [GitHub ANNA Money](http://github.com/anna-money/)
+
+- OpenVPN team at [OpenVPN Cloud](https://openvpn.net/cloud-vpn/?utm_source=terraform&utm_medium=docs)
+- SRE Team at [ANNA Money](https://anna.money/?utm_source=terraform&utm_medium=referral&utm_campaign=docs) / [GitHub ANNA Money](http://github.com/anna-money/)
 - [@patoarvizu](https://github.com/patoarvizu)
 
 ## Requirements
 
--	[Terraform](https://www.terraform.io/downloads.html) 0.12.x
--	[Go](https://golang.org/doc/install) 1.18 (to build the provider plugin)
+- [Terraform](https://www.terraform.io/downloads.html) 0.12.x
+- [Go](https://golang.org/doc/install) 1.18 (to build the provider plugin)
 
 ## Building The Provider
 
 Clone repository to: `$GOPATH/src/github.com/OpenVPN/terraform-provider-openvpn-cloud`
 
 ```sh
-$ mkdir -p $GOPATH/src/github.com/OpenVPN; cd $GOPATH/src/github.com/OpenVPN
-$ git clone git@github.com:OpenVPN/terraform-provider-openvpn-cloud.git
+mkdir -p $GOPATH/src/github.com/OpenVPN; cd $GOPATH/src/github.com/OpenVPN
+git clone git@github.com:OpenVPN/terraform-provider-openvpn-cloud.git
 ```
 
 Enter the provider directory and build the provider
 
 ```sh
-$ cd $GOPATH/src/github.com/OpenVPN/terraform-provider-openvpn-cloud
-$ make build
+cd $GOPATH/src/github.com/OpenVPN/terraform-provider-openvpn-cloud
+make build
 ```
 
 ## Developing the Provider
 
-If you wish to work on the provider, you'll first need [Go](http://www.golang.org) installed on your machine (version 1.18+ is *required*). You'll also need to correctly setup a [GOPATH](http://golang.org/doc/code.html#GOPATH), as well as adding `$GOPATH/bin` to your `$PATH`.
+If you wish to work on the provider, you'll first need [Go](http://www.golang.org) installed on your machine (version 1.18+ is _required_). You'll also need to correctly setup a [GOPATH](http://golang.org/doc/code.html#GOPATH), as well as adding `$GOPATH/bin` to your `$PATH`.
 
 To compile the provider, run `make build`. This will build the provider and put the provider binary in the `$GOPATH/bin` directory.
 
 ```sh
-$ make bin
+make bin
 ...
-$ $GOPATH/bin/terraform-provider-openvpn-cloud
+$GOPATH/bin/terraform-provider-openvpn-cloud
 ...
 ```
 
 In order to test the provider, you can simply run `make test`.
 
 ```sh
-$ make test
+make test
 ```
 
 In order to run the full suite of Acceptance tests, run `make testacc`.
 
-*Note:* Acceptance tests create real resources, and often cost money to run.
+_Note:_ Acceptance tests create real resources, and often cost money to run.
 
 ```sh
-$ make testacc
+make testacc
 ```
 
 _**Please note:** This provider, like OpenVPN Cloud API, is in beta status. Report any problems via issue in this repo._
