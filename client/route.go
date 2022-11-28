@@ -25,8 +25,6 @@ const (
 
 func (c *Client) CreateRoute(networkId string, route Route) (*Route, error) {
 
-	fmt.Println(route)
-
 	type newRoute struct {
 		Description string `json:"description"`
 		Value       string `json:"value"`
