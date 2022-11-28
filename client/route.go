@@ -24,7 +24,17 @@ const (
 )
 
 func (c *Client) CreateRoute(networkId string, route Route) (*Route, error) {
-	routeJson, err := json.Marshal(route)
+
+	type newRoute struct {
+		Description string `json:"description"`
+		Value       string `json:"value"`
+	}
+
+	var routeToCreate newRoute
+	routeToCreate.Description = "Managed by Terraform. " + route.Description
+	routeToCreate.Value = route.Value
+
+	routeJson, err := json.Marshal(routeToCreate)
 	if err != nil {
 		return nil, err
 	}
