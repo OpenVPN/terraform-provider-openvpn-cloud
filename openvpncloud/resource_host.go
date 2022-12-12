@@ -94,6 +94,10 @@ func resourceHost() *schema.Resource {
 							Computed:    true,
 							Description: "The IPV6 address of the connector.",
 						},
+						"profile": {
+							Type:     schema.TypeString,
+							Computed: true,
+						},
 					},
 				},
 			},
@@ -123,6 +127,11 @@ func resourceHostCreate(ctx context.Context, d *schema.ResourceData, m interface
 		return append(diags, diag.FromErr(err)...)
 	}
 	d.SetId(host.Id)
+	diagnostics := setConnectorsList(d, c, host.Connectors)
+	if diagnostics != nil {
+		return diagnostics
+	}
+
 	return append(diags, diag.Diagnostic{
 		Severity: diag.Warning,
 		Summary:  "The connector for this host needs to be set up manually",
@@ -145,21 +154,10 @@ func resourceHostRead(ctx context.Context, d *schema.ResourceData, m interface{}
 	d.Set("description", host.Description)
 	d.Set("internet_access", host.InternetAccess)
 	d.Set("system_subnets", host.SystemSubnets)
-	connectorsList := make([]interface{}, 0)
-	for _, conn := range host.Connectors {
-		connector := make(map[string]interface{})
-		connector["id"] = conn.Id
-		connector["name"] = conn.Name
-		connector["network_item_id"] = conn.NetworkItemId
-		connector["network_item_type"] = conn.NetworkItemType
-		connector["vpn_region_id"] = conn.VpnRegionId
-		connector["ip_v4_address"] = conn.IPv4Address
-		connector["ip_v6_address"] = conn.IPv6Address
-		connectorsList = append(connectorsList, connector)
-	}
-	err = d.Set("connector", connectorsList)
-	if err != nil {
-		return append(diags, diag.FromErr(err)...)
+
+	diagnostics := setConnectorsList(d, c, host.Connectors)
+	if diagnostics != nil {
+		return diagnostics
 	}
 	return diags
 }
@@ -232,4 +230,39 @@ func resourceHostDelete(ctx context.Context, d *schema.ResourceData, m interface
 		return append(diags, diag.FromErr(err)...)
 	}
 	return diags
+}
+
+func setConnectorsList(data *schema.ResourceData, c *client.Client, connectors []client.Connector) diag.Diagnostics {
+	connectorsList := make([]interface{}, len(connectors))
+	for i, connector := range connectors {
+		connectorsData, err := getConnectorsListItem(c, connector)
+		if err != nil {
+			return diag.FromErr(err)
+		}
+		connectorsList[i] = connectorsData
+	}
+	err := data.Set("connector", connectorsList)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+	return nil
+}
+
+func getConnectorsListItem(c *client.Client, connector client.Connector) (map[string]interface{}, error) {
+	connectorsData := map[string]interface{}{
+		"id":                connector.Id,
+		"name":              connector.Name,
+		"vpn_region_id":     connector.VpnRegionId,
+		"ip_v4_address":     connector.IPv4Address,
+		"ip_v6_address":     connector.IPv6Address,
+		"network_item_id":   connector.NetworkItemId,
+		"network_item_type": connector.NetworkItemType,
+	}
+
+	connectorProfile, err := c.GetConnectorProfile(connector.Id)
+	if err != nil {
+		return nil, err
+	}
+	connectorsData["profile"] = connectorProfile
+	return connectorsData, nil
 }
