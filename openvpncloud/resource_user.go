@@ -14,6 +14,7 @@ func resourceUser() *schema.Resource {
 		Description:   "Use `openvpncloud_user` to create an OpenVPN Cloud user.",
 		CreateContext: resourceUserCreate,
 		ReadContext:   resourceUserRead,
+		UpdateContext: resourceUserUpdate,
 		DeleteContext: resourceUserDelete,
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
@@ -36,27 +37,25 @@ func resourceUser() *schema.Resource {
 			"first_name": {
 				Type:         schema.TypeString,
 				Required:     true,
-				ForceNew:     true,
 				ValidateFunc: validation.StringLenBetween(1, 20),
 				Description:  "User's first name.",
 			},
 			"last_name": {
 				Type:         schema.TypeString,
 				Required:     true,
-				ForceNew:     true,
 				ValidateFunc: validation.StringLenBetween(1, 20),
 				Description:  "User's last name.",
 			},
 			"group_id": {
 				Type:        schema.TypeString,
-				Optional:    true,
-				ForceNew:    true,
+				Required:    true,
 				Description: "The UUID of a user's group.",
 			},
 			"role": {
 				Type:        schema.TypeString,
 				Optional:    true,
 				ForceNew:    true,
+				Default:     "MEMBER",
 				Description: "The type of user role. Valid values are `ADMIN`, `MEMBER`, or `OWNER`.",
 			},
 			"devices": {
@@ -161,6 +160,38 @@ func resourceUserRead(ctx context.Context, d *schema.ResourceData, m interface{}
 		d.Set("role", u.Role)
 	}
 	return diags
+}
+
+func resourceUserUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	c := m.(*client.Client)
+	var diags diag.Diagnostics
+	if !d.HasChanges("first_name", "last_name", "group_id") {
+		return diags
+	}
+
+	u, err := c.GetUserById(d.Id())
+	if err != nil {
+		return append(diags, diag.FromErr(err)...)
+	}
+
+	_, email := d.GetChange("email")
+	_, firstName := d.GetChange("first_name")
+	_, lastName := d.GetChange("last_name")
+	_, role := d.GetChange("role")
+	_, groupId := d.GetChange("group_id")
+	status := u.AccountStatus
+
+	err = c.UpdateUser(client.User{
+		Id:        d.Id(),
+		Email:     email.(string),
+		FirstName: firstName.(string),
+		LastName:  lastName.(string),
+		GroupId:   groupId.(string),
+		Role:      role.(string),
+		Status:    status,
+	})
+
+	return append(diags, diag.FromErr(err)...)
 }
 
 func resourceUserDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {

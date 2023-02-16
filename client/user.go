@@ -8,16 +8,17 @@ import (
 )
 
 type User struct {
-	Id        string   `json:"id"`
-	Username  string   `json:"username"`
-	Role      string   `json:"role"`
-	Email     string   `json:"email"`
-	AuthType  string   `json:"authType"`
-	FirstName string   `json:"firstName"`
-	LastName  string   `json:"lastName"`
-	GroupId   string   `json:"groupId"`
-	Status    string   `json:"status"`
-	Devices   []Device `json:"devices"`
+	Id            string   `json:"id"`
+	Username      string   `json:"username"`
+	Role          string   `json:"role"`
+	Email         string   `json:"email"`
+	AuthType      string   `json:"authType"`
+	FirstName     string   `json:"firstName"`
+	LastName      string   `json:"lastName"`
+	GroupId       string   `json:"groupId"`
+	Status        string   `json:"status"`
+	AccountStatus string   `json:"accountStatus"`
+	Devices       []Device `json:"devices"`
 }
 
 type Device struct {
@@ -86,6 +87,22 @@ func (c *Client) GetUserById(userId string) (*User, error) {
 		return nil, err
 	}
 	return &u, nil
+}
+
+func (c *Client) UpdateUser(user User) error {
+	userJson, err := json.Marshal(user)
+	if err != nil {
+		return err
+	}
+	req, err := http.NewRequest(http.MethodPut, fmt.Sprintf("%s/api/beta/users/%s", c.BaseURL, user.Id), bytes.NewBuffer(userJson))
+	if err != nil {
+		return err
+	}
+	_, err = c.DoRequest(req)
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
 func (c *Client) DeleteUser(userId string) error {
