@@ -125,7 +125,7 @@ func (c *Client) DeleteConnector(connectorId string, networkItemId string, netwo
 }
 
 func (c *Client) GetConnectorProfile(id string) (string, error) {
-	req, err := http.NewRequest(http.MethodPost, fmt.Sprintf("%s/api/beta/connectors/%s/profile", c.BaseURL, id), bytes.NewBufferString(""))
+	req, err := http.NewRequest(http.MethodPost, fmt.Sprintf("%s/api/beta/connectors/%s/profile", c.BaseURL, id), nil)
 	if err != nil {
 		return "", err
 	}
