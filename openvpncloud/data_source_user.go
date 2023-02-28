@@ -124,7 +124,7 @@ func dataSourceUserRead(ctx context.Context, d *schema.ResourceData, m interface
 }
 
 func getUserDevicesSlice(userDevices *[]client.Device) []interface{} {
-	devices := make([]interface{}, len(*userDevices), len(*userDevices))
+	devices := make([]interface{}, len(*userDevices))
 	for i, d := range *userDevices {
 		device := make(map[string]interface{})
 		device["id"] = d.Id

@@ -139,7 +139,7 @@ func dataSourceNetworkRead(ctx context.Context, d *schema.ResourceData, m interf
 }
 
 func getRoutesSlice(networkRoutes *[]client.Route) []interface{} {
-	routes := make([]interface{}, len(*networkRoutes), len(*networkRoutes))
+	routes := make([]interface{}, len(*networkRoutes))
 	for i, r := range *networkRoutes {
 		route := make(map[string]interface{})
 		route["id"] = r.Id
@@ -151,7 +151,7 @@ func getRoutesSlice(networkRoutes *[]client.Route) []interface{} {
 }
 
 func getConnectorsSlice(connectors *[]client.Connector) []interface{} {
-	conns := make([]interface{}, len(*connectors), len(*connectors))
+	conns := make([]interface{}, len(*connectors))
 	for i, c := range *connectors {
 		connector := make(map[string]interface{})
 		connector["id"] = c.Id
