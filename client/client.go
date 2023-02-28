@@ -2,17 +2,20 @@ package client
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"fmt"
+	"golang.org/x/time/rate"
 	"io"
 	"net/http"
 	"time"
 )
 
 type Client struct {
-	HTTPClient *http.Client
-	BaseURL    string
-	Token      string
+	HTTPClient  *http.Client
+	BaseURL     string
+	Token       string
+	RateLimiter *rate.Limiter
 }
 
 type Credentials struct {
@@ -46,14 +49,23 @@ func NewClient(baseUrl, clientId, clientSecret string) (*Client, error) {
 	if err != nil {
 		return nil, err
 	}
+
 	return &Client{
-		HTTPClient: &http.Client{Timeout: 10 * time.Second},
-		BaseURL:    baseUrl,
-		Token:      credentials.AccessToken,
+		HTTPClient: &http.Client{
+			Timeout: 30 * time.Second,
+		},
+		BaseURL:     baseUrl,
+		Token:       credentials.AccessToken,
+		RateLimiter: rate.NewLimiter(rate.Every(1*time.Second), 5),
 	}, nil
 }
 
 func (c *Client) DoRequest(req *http.Request) ([]byte, error) {
+	err := c.RateLimiter.Wait(context.Background())
+	if err != nil {
+		return nil, err
+	}
+
 	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", c.Token))
 
 	res, err := c.HTTPClient.Do(req)

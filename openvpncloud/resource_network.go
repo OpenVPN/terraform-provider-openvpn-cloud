@@ -67,6 +67,12 @@ func resourceNetwork() *schema.Resource {
 							ValidateFunc: validation.StringInSlice([]string{client.RouteTypeIPV4, client.RouteTypeIPV6, client.RouteTypeDomain}, false),
 							Description:  "The type of route. Valid values are `IP_V4`, `IP_V6`, and `DOMAIN`.",
 						},
+						"description": {
+							Type:        schema.TypeString,
+							Optional:    true,
+							Default:     "Managed by Terraform.",
+							Description: "The default route description.",
+						},
 						"value": {
 							Type:        schema.TypeString,
 							Required:    true,
@@ -153,8 +159,9 @@ func resourceNetworkCreate(ctx context.Context, d *schema.ResourceData, m interf
 	d.SetId(network.Id)
 	configRoute := d.Get("default_route").([]interface{})[0].(map[string]interface{})
 	defaultRoute, err := c.CreateRoute(network.Id, client.Route{
-		Type:  configRoute["type"].(string),
-		Value: configRoute["value"].(string),
+		Type:        configRoute["type"].(string),
+		Description: configRoute["description"].(string),
+		Value:       configRoute["value"].(string),
 	})
 	if err != nil {
 		return append(diags, diag.FromErr(err)...)
@@ -274,10 +281,12 @@ func resourceNetworkUpdate(ctx context.Context, d *schema.ResourceData, m interf
 			// This happens when importing the resource
 			newMap := newSlice[0].(map[string]interface{})
 			routeType := newMap["type"]
+			routeDesc := newMap["description"]
 			routeValue := newMap["value"]
 			route := client.Route{
-				Type:  routeType.(string),
-				Value: routeValue.(string),
+				Type:        routeType.(string),
+				Description: routeDesc.(string),
+				Value:       routeValue.(string),
 			}
 			defaultRoute, err := c.CreateRoute(d.Id(), route)
 			if err != nil {
@@ -295,11 +304,13 @@ func resourceNetworkUpdate(ctx context.Context, d *schema.ResourceData, m interf
 			newMap := newSlice[0].(map[string]interface{})
 			routeId := newMap["id"]
 			routeType := newMap["type"]
+			routeDesc := newMap["description"]
 			routeValue := newMap["value"]
 			route := client.Route{
-				Id:    routeId.(string),
-				Type:  routeType.(string),
-				Value: routeValue.(string),
+				Id:          routeId.(string),
+				Type:        routeType.(string),
+				Description: routeDesc.(string),
+				Value:       routeValue.(string),
 			}
 			err := c.UpdateRoute(d.Id(), route)
 			if err != nil {

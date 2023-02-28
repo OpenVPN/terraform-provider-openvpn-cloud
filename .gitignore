@@ -28,3 +28,9 @@ main
 
 # Keep windows files with windows line endings
 *.winfile eol=crlf
+
+.terraform**
+terraform.tfstate**
+*.tfvars
+
+*.env

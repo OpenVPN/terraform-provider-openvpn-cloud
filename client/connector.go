@@ -7,19 +7,28 @@ import (
 	"net/http"
 )
 
+type ConnectionStatus string
+
 type Connector struct {
-	Id              string `json:"id,omitempty"`
-	Name            string `json:"name"`
-	NetworkItemId   string `json:"networkItemId"`
-	NetworkItemType string `json:"networkItemType"`
-	VpnRegionId     string `json:"vpnRegionId"`
-	IPv4Address     string `json:"ipV4Address"`
-	IPv6Address     string `json:"ipV6Address"`
+	Id               string           `json:"id,omitempty"`
+	Name             string           `json:"name"`
+	NetworkItemId    string           `json:"networkItemId"`
+	NetworkItemType  string           `json:"networkItemType"`
+	VpnRegionId      string           `json:"vpnRegionId"`
+	IPv4Address      string           `json:"ipV4Address"`
+	IPv6Address      string           `json:"ipV6Address"`
+	Profile          string           `json:"profile"`
+	ConnectionStatus ConnectionStatus `json:"connectionStatus"`
 }
 
 const (
 	NetworkItemTypeHost    = "HOST"
 	NetworkItemTypeNetwork = "NETWORK"
+)
+
+const (
+	ConnectionStatusOffline ConnectionStatus = "OFFLINE"
+	ConnectionStatusOnline  ConnectionStatus = "ONLINE"
 )
 
 func (c *Client) GetConnectors() ([]Connector, error) {
@@ -116,4 +125,17 @@ func (c *Client) DeleteConnector(connectorId string, networkItemId string, netwo
 	}
 	_, err = c.DoRequest(req)
 	return err
+}
+
+func (c *Client) GetConnectorProfile(id string) (string, error) {
+	req, err := http.NewRequest(http.MethodPost, fmt.Sprintf("%s/api/beta/connectors/%s/profile", c.BaseURL, id), nil)
+	if err != nil {
+		return "", err
+	}
+	body, err := c.DoRequest(req)
+	if err != nil {
+		return "", err
+	}
+
+	return string(body), nil
 }

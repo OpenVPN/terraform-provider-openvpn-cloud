@@ -1,7 +1,7 @@
 HOSTNAME=openvpncloud.dev
 NAMESPACE=openvpn
 NAME=openvpncloud
-VERSION=0.0.6
+VERSION=0.0.8
 BINARY=terraform-provider-${NAME}
 OS_ARCH=darwin_amd64
 
