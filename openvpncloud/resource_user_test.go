@@ -14,7 +14,7 @@ import (
 func TestAccOpenvpncloudUser_basic(t *testing.T) {
 	rn := "openvpncloud_user.test"
 	user := client.User{
-		Username:  acctest.RandString(10),
+		Username:  acctest.RandStringFromCharSet(10, alphabet),
 		FirstName: acctest.RandStringFromCharSet(10, alphabet),
 		LastName:  acctest.RandStringFromCharSet(10, alphabet),
 		Email:     "v.kozyrev.sa@gmail.com", // replace it with a test email later
