@@ -48,7 +48,7 @@ func resourceUser() *schema.Resource {
 			},
 			"group_id": {
 				Type:        schema.TypeString,
-				Required:    true,
+				Optional:    true,
 				Description: "The UUID of a user's group.",
 			},
 			"role": {
@@ -145,6 +145,17 @@ func resourceUserRead(ctx context.Context, d *schema.ResourceData, m interface{}
 	var diags diag.Diagnostics
 	userId := d.Id()
 	u, err := c.GetUserById(userId)
+
+	// If group_id is not set, OpenVPN cloud sets it to the default group.
+	var groupId string
+	if d.Get("group_id") == "" {
+		// The group has not been explicitly set.
+		// Set it to an empty string to keep the default group.
+		groupId = ""
+	} else {
+		groupId = u.GroupId
+	}
+
 	if err != nil {
 		return append(diags, diag.FromErr(err)...)
 	}
@@ -155,7 +166,7 @@ func resourceUserRead(ctx context.Context, d *schema.ResourceData, m interface{}
 		d.Set("email", u.Email)
 		d.Set("first_name", u.FirstName)
 		d.Set("last_name", u.LastName)
-		d.Set("group_id", u.GroupId)
+		d.Set("group_id", groupId)
 		d.Set("devices", u.Devices)
 		d.Set("role", u.Role)
 	}
@@ -165,7 +176,7 @@ func resourceUserRead(ctx context.Context, d *schema.ResourceData, m interface{}
 func resourceUserUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	c := m.(*client.Client)
 	var diags diag.Diagnostics
-	if !d.HasChanges("first_name", "last_name", "group_id") {
+	if !d.HasChanges("first_name", "last_name", "group_id", "email") {
 		return diags
 	}
 
