@@ -188,10 +188,12 @@ func resourceUserUpdate(ctx context.Context, d *schema.ResourceData, m interface
 	_, firstName := d.GetChange("first_name")
 	_, lastName := d.GetChange("last_name")
 	_, role := d.GetChange("role")
+	status := u.AccountStatus
 	oldGroupId, newGroupId := d.GetChange("group_id")
-	// The group has not been set explicitly.
-	// The update endpoint requires group_id to be set, so we should set it to the default group.
+
 	groupId := newGroupId.(string)
+	// If both are empty strings, then the group has not been set explicitly.
+	// The update endpoint requires group_id to be set, so we should set it to the default group.
 	if oldGroupId.(string) == "" && groupId == "" {
 		g, err := c.GetUserGroup("Default")
 		if err != nil {
@@ -199,7 +201,6 @@ func resourceUserUpdate(ctx context.Context, d *schema.ResourceData, m interface
 		}
 		groupId = g.Id
 	}
-	status := u.AccountStatus
 
 	err = c.UpdateUser(client.User{
 		Id:        d.Id(),
