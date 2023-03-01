@@ -30,7 +30,6 @@ func resourceUser() *schema.Resource {
 			"email": {
 				Type:         schema.TypeString,
 				Required:     true,
-				ForceNew:     true,
 				ValidateFunc: validation.StringLenBetween(1, 120),
 				Description:  "An invitation to OpenVPN cloud account will be sent to this email. It will include an initial password and a VPN setup guide.",
 			},
@@ -189,7 +188,17 @@ func resourceUserUpdate(ctx context.Context, d *schema.ResourceData, m interface
 	_, firstName := d.GetChange("first_name")
 	_, lastName := d.GetChange("last_name")
 	_, role := d.GetChange("role")
-	_, groupId := d.GetChange("group_id")
+	oldGroupId, newGroupId := d.GetChange("group_id")
+	// The group has not been set explicitly.
+	// The update endpoint requires group_id to be set, so we should set it to the default group.
+	groupId := newGroupId.(string)
+	if oldGroupId.(string) == "" && groupId == "" {
+		g, err := c.GetUserGroup("Default")
+		if err != nil {
+			return append(diags, diag.FromErr(err)...)
+		}
+		groupId = g.Id
+	}
 	status := u.AccountStatus
 
 	err = c.UpdateUser(client.User{
@@ -197,7 +206,7 @@ func resourceUserUpdate(ctx context.Context, d *schema.ResourceData, m interface
 		Email:     email.(string),
 		FirstName: firstName.(string),
 		LastName:  lastName.(string),
-		GroupId:   groupId.(string),
+		GroupId:   groupId,
 		Role:      role.(string),
 		Status:    status,
 	})
