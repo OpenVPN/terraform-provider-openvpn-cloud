@@ -347,25 +347,3 @@ func resourceNetworkDelete(ctx context.Context, d *schema.ResourceData, m interf
 	}
 	return diags
 }
-
-func getNetworkConnectorSlice(networkConnectors []client.Connector, networkId string, connectorName string) []interface{} {
-	if len(networkConnectors) == 0 {
-		return nil
-	}
-	connectorsList := make([]interface{}, 1)
-	for _, c := range networkConnectors {
-		if c.NetworkItemId == networkId && c.Name == connectorName {
-			connector := make(map[string]interface{})
-			connector["id"] = c.Id
-			connector["name"] = c.Name
-			connector["network_item_id"] = c.NetworkItemId
-			connector["network_item_type"] = c.NetworkItemType
-			connector["vpn_region_id"] = c.VpnRegionId
-			connector["ip_v4_address"] = c.IPv4Address
-			connector["ip_v6_address"] = c.IPv6Address
-			connectorsList[0] = connector
-			break
-		}
-	}
-	return connectorsList
-}

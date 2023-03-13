@@ -34,5 +34,5 @@ func (c *Client) GetUserGroup(name string) (*UserGroup, error) {
 			return &ug, nil
 		}
 	}
-	return nil, nil
+	return nil, fmt.Errorf("group %s does not exist", name)
 }

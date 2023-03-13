@@ -107,6 +107,9 @@ func (c *Client) AddConnector(connector Connector, networkItemId string) (*Conne
 		return nil, err
 	}
 	body, err := c.DoRequest(req)
+	if err != nil {
+		return nil, err
+	}
 	var conn Connector
 	err = json.Unmarshal(body, &conn)
 	if err != nil {

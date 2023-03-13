@@ -14,6 +14,7 @@ func resourceUser() *schema.Resource {
 		Description:   "Use `openvpncloud_user` to create an OpenVPN Cloud user.",
 		CreateContext: resourceUserCreate,
 		ReadContext:   resourceUserRead,
+		UpdateContext: resourceUserUpdate,
 		DeleteContext: resourceUserDelete,
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
@@ -29,34 +30,31 @@ func resourceUser() *schema.Resource {
 			"email": {
 				Type:         schema.TypeString,
 				Required:     true,
-				ForceNew:     true,
 				ValidateFunc: validation.StringLenBetween(1, 120),
 				Description:  "An invitation to OpenVPN cloud account will be sent to this email. It will include an initial password and a VPN setup guide.",
 			},
 			"first_name": {
 				Type:         schema.TypeString,
 				Required:     true,
-				ForceNew:     true,
 				ValidateFunc: validation.StringLenBetween(1, 20),
 				Description:  "User's first name.",
 			},
 			"last_name": {
 				Type:         schema.TypeString,
 				Required:     true,
-				ForceNew:     true,
 				ValidateFunc: validation.StringLenBetween(1, 20),
 				Description:  "User's last name.",
 			},
 			"group_id": {
 				Type:        schema.TypeString,
 				Optional:    true,
-				ForceNew:    true,
 				Description: "The UUID of a user's group.",
 			},
 			"role": {
 				Type:        schema.TypeString,
 				Optional:    true,
 				ForceNew:    true,
+				Default:     "MEMBER",
 				Description: "The type of user role. Valid values are `ADMIN`, `MEMBER`, or `OWNER`.",
 			},
 			"devices": {
@@ -146,6 +144,17 @@ func resourceUserRead(ctx context.Context, d *schema.ResourceData, m interface{}
 	var diags diag.Diagnostics
 	userId := d.Id()
 	u, err := c.GetUserById(userId)
+
+	// If group_id is not set, OpenVPN cloud sets it to the default group.
+	var groupId string
+	if d.Get("group_id") == "" {
+		// The group has not been explicitly set.
+		// Set it to an empty string to keep the default group.
+		groupId = ""
+	} else {
+		groupId = u.GroupId
+	}
+
 	if err != nil {
 		return append(diags, diag.FromErr(err)...)
 	}
@@ -156,11 +165,54 @@ func resourceUserRead(ctx context.Context, d *schema.ResourceData, m interface{}
 		d.Set("email", u.Email)
 		d.Set("first_name", u.FirstName)
 		d.Set("last_name", u.LastName)
-		d.Set("group_id", u.GroupId)
+		d.Set("group_id", groupId)
 		d.Set("devices", u.Devices)
 		d.Set("role", u.Role)
 	}
 	return diags
+}
+
+func resourceUserUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	c := m.(*client.Client)
+	var diags diag.Diagnostics
+	if !d.HasChanges("first_name", "last_name", "group_id", "email") {
+		return diags
+	}
+
+	u, err := c.GetUserById(d.Id())
+	if err != nil {
+		return append(diags, diag.FromErr(err)...)
+	}
+
+	_, email := d.GetChange("email")
+	_, firstName := d.GetChange("first_name")
+	_, lastName := d.GetChange("last_name")
+	_, role := d.GetChange("role")
+	status := u.AccountStatus
+	oldGroupId, newGroupId := d.GetChange("group_id")
+
+	groupId := newGroupId.(string)
+	// If both are empty strings, then the group has not been set explicitly.
+	// The update endpoint requires group_id to be set, so we should set it to the default group.
+	if oldGroupId.(string) == "" && groupId == "" {
+		g, err := c.GetUserGroup("Default")
+		if err != nil {
+			return append(diags, diag.FromErr(err)...)
+		}
+		groupId = g.Id
+	}
+
+	err = c.UpdateUser(client.User{
+		Id:        d.Id(),
+		Email:     email.(string),
+		FirstName: firstName.(string),
+		LastName:  lastName.(string),
+		GroupId:   groupId,
+		Role:      role.(string),
+		Status:    status,
+	})
+
+	return append(diags, diag.FromErr(err)...)
 }
 
 func resourceUserDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
