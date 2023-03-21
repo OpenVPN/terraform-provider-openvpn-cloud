@@ -1,9 +1,9 @@
 HOSTNAME=openvpncloud.dev
 NAMESPACE=openvpn
 NAME=openvpncloud
-VERSION=0.0.8
+VERSION=0.0.9
 BINARY=terraform-provider-${NAME}
-OS_ARCH=darwin_amd64
+OS_ARCH=darwin_arm64
 
 default: install
 
@@ -16,6 +16,9 @@ release:
 install: build
 	mkdir -p ~/.terraform.d/plugins/${HOSTNAME}/${NAMESPACE}/${NAME}/${VERSION}/${OS_ARCH}
 	mv ${BINARY} ~/.terraform.d/plugins/${HOSTNAME}/${NAMESPACE}/${NAME}/${VERSION}/${OS_ARCH}
+
+lint:
+	golangci-lint run ./...
 
 test:
 	go test -i $(TEST) || exit 1
