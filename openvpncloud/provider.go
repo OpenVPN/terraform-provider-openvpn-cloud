@@ -9,6 +9,11 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
+const (
+	clientIDEnvVar     = "OPENVPN_CLOUD_CLIENT_ID"
+	clientSecretEnvVar = "OPENVPN_CLOUD_CLIENT_SECRET"
+)
+
 type Token struct {
 	AccessToken string `json:"access_token"`
 }
@@ -20,13 +25,13 @@ func Provider() *schema.Provider {
 				Type:        schema.TypeString,
 				Optional:    true,
 				Sensitive:   true,
-				DefaultFunc: schema.EnvDefaultFunc("OPENVPN_CLOUD_CLIENT_ID", nil),
+				DefaultFunc: schema.EnvDefaultFunc(clientIDEnvVar, nil),
 			},
 			"client_secret": {
 				Type:        schema.TypeString,
 				Optional:    true,
 				Sensitive:   true,
-				DefaultFunc: schema.EnvDefaultFunc("OPENVPN_CLOUD_CLIENT_SECRET", nil),
+				DefaultFunc: schema.EnvDefaultFunc(clientSecretEnvVar, nil),
 			},
 			"base_url": {
 				Type:     schema.TypeString,

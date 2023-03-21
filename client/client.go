@@ -5,10 +5,11 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"golang.org/x/time/rate"
 	"io"
 	"net/http"
 	"time"
+
+	"golang.org/x/time/rate"
 )
 
 type Client struct {
@@ -23,6 +24,10 @@ type Credentials struct {
 }
 
 func NewClient(baseUrl, clientId, clientSecret string) (*Client, error) {
+	if clientId == "" || clientSecret == "" {
+		return nil, ErrCredentialsRequired
+	}
+
 	values := map[string]string{"grant_type": "client_credentials", "scope": "default"}
 	json_data, err := json.Marshal(values)
 	if err != nil {

@@ -1,10 +1,16 @@
 package openvpncloud
 
 import (
+	"context"
 	"os"
+	"strings"
 	"testing"
 
+	"github.com/OpenVPN/terraform-provider-openvpn-cloud/client"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 const alphabet = "abcdefghigklmnopqrstuvwxyz"
@@ -27,16 +33,28 @@ func init() {
 }
 
 func TestProvider(t *testing.T) {
-	if err := Provider().InternalValidate(); err != nil {
-		t.Fatalf("err: %s", err)
+	err := Provider().InternalValidate()
+	require.NoError(t, err)
+
+	// must have the required error when the credentials are not set
+	t.Setenv(clientIDEnvVar, "")
+	t.Setenv(clientSecretEnvVar, "")
+	rc := terraform.ResourceConfig{}
+	diags := Provider().Configure(context.Background(), &rc)
+	assert.True(t, diags.HasError())
+
+	for _, d := range diags {
+		assert.True(t, strings.Contains(d.Detail, client.ErrCredentialsRequired.Error()),
+			"error message does not contain the expected error")
+		t.Log(d.Detail)
 	}
 }
 
 func testAccPreCheck(t *testing.T) {
-	if v := os.Getenv("OPENVPN_CLOUD_CLIENT_ID"); v == "" {
-		t.Fatal("OPENVPN_CLOUD_CLIENT_ID must be set for acceptance tests")
+	if v := os.Getenv(clientIDEnvVar); v == "" {
+		t.Fatalf("%s must be set for acceptance tests", clientIDEnvVar)
 	}
-	if v := os.Getenv("OPENVPN_CLOUD_CLIENT_SECRET"); v == "" {
-		t.Fatal("OPENVPN_CLOUD_CLIENT_SECRET must be set for acceptance tests")
+	if v := os.Getenv(clientSecretEnvVar); v == "" {
+		t.Fatalf("%s must be set for acceptance tests", clientSecretEnvVar)
 	}
 }
