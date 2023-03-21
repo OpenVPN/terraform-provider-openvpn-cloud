@@ -17,10 +17,10 @@ func TestAccOpenvpncloudUser_basic(t *testing.T) {
 		Username:  acctest.RandStringFromCharSet(10, alphabet),
 		FirstName: acctest.RandStringFromCharSet(10, alphabet),
 		LastName:  acctest.RandStringFromCharSet(10, alphabet),
-		Email:     "terraform-tests@devopenvpn.in",
+		Email:     fmt.Sprintf("terraform-tests+%s@devopenvpn.in", acctest.RandString(10)),
 	}
 	userChanged := user
-	userChanged.Email = "terraform-tests+changed@devopenvpn.in"
+	userChanged.Email = fmt.Sprintf("terraform-tests+changed%s@devopenvpn.in", acctest.RandString(10))
 	var userID string
 
 	check := func(user client.User) resource.TestCheckFunc {

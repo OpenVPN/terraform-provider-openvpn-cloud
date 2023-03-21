@@ -44,10 +44,9 @@ func TestProvider(t *testing.T) {
 	assert.True(t, diags.HasError())
 
 	for _, d := range diags {
-		detail := d.Detail
-		assert.True(t, strings.Contains(detail, client.ErrCredentialsRequired.Error()),
+		assert.True(t, strings.Contains(d.Detail, client.ErrCredentialsRequired.Error()),
 			"error message does not contain the expected error")
-		t.Log(detail)
+		t.Log(d.Detail)
 	}
 }
 
