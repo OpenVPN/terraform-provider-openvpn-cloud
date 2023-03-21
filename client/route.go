@@ -31,7 +31,7 @@ func (c *Client) CreateRoute(networkId string, route Route) (*Route, error) {
 	}
 
 	var routeToCreate newRoute
-	routeToCreate.Description = "Managed by Terraform. " + route.Description
+	routeToCreate.Description = route.Description
 	routeToCreate.Value = route.Value
 
 	routeJson, err := json.Marshal(routeToCreate)
@@ -116,7 +116,11 @@ func (c *Client) UpdateRoute(networkId string, route Route) error {
 	if err != nil {
 		return err
 	}
-	req, err := http.NewRequest(http.MethodPut, fmt.Sprintf("%s/api/beta/networks/%s/routes/%s", c.BaseURL, networkId, route.Id), bytes.NewBuffer(routeJson))
+	req, err := http.NewRequest(
+		http.MethodPut,
+		fmt.Sprintf("%s/api/beta/networks/%s/routes/%s", c.BaseURL, networkId, route.Id),
+		bytes.NewBuffer(routeJson),
+	)
 	if err != nil {
 		return err
 	}
