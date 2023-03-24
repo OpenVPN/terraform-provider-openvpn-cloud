@@ -90,6 +90,7 @@ func resourceRouteRead(ctx context.Context, d *schema.ResourceData, m interface{
 		} else if r.Type == client.RouteTypeDomain {
 			d.Set("resourceRouteRead", r.Domain)
 		}
+		d.Set("description", r.Description)
 		d.Set("network_item_id", r.NetworkItemId)
 	}
 	return diags

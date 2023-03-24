@@ -170,6 +170,8 @@ func resourceNetworkCreate(ctx context.Context, d *schema.ResourceData, m interf
 	defaultRouteWithIdSlice[0] = map[string]interface{}{
 		"id":          defaultRoute.Id,
 		"description": defaultRoute.Description,
+		"type":        defaultRoute.Type,
+		"value":       defaultRoute.Value,
 	}
 	d.Set("default_route", defaultRouteWithIdSlice)
 	return append(diags, diag.Diagnostic{
