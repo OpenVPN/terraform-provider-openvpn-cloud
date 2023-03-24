@@ -168,7 +168,10 @@ func resourceNetworkCreate(ctx context.Context, d *schema.ResourceData, m interf
 	}
 	defaultRouteWithIdSlice := make([]map[string]interface{}, 1)
 	defaultRouteWithIdSlice[0] = map[string]interface{}{
-		"id": defaultRoute.Id,
+		"id":          defaultRoute.Id,
+		"description": defaultRoute.Description,
+		"type":        defaultRoute.Type,
+		"value":       defaultRoute.Value,
 	}
 	d.Set("default_route", defaultRouteWithIdSlice)
 	return append(diags, diag.Diagnostic{
@@ -217,8 +220,9 @@ func resourceNetworkRead(ctx context.Context, d *schema.ResourceData, m interfac
 		} else {
 			defaultRoute := []map[string]interface{}{
 				{
-					"id":   configRoute["id"].(string),
-					"type": route.Type,
+					"id":          configRoute["id"].(string),
+					"type":        route.Type,
+					"description": route.Description,
 				},
 			}
 			if route.Type == client.RouteTypeIPV4 || route.Type == client.RouteTypeIPV6 {
@@ -294,7 +298,8 @@ func resourceNetworkUpdate(ctx context.Context, d *schema.ResourceData, m interf
 			}
 			defaultRouteWithIdSlice := make([]map[string]interface{}, 1)
 			defaultRouteWithIdSlice[0] = map[string]interface{}{
-				"id": defaultRoute.Id,
+				"id":          defaultRoute.Id,
+				"description": defaultRoute.Description,
 			}
 			err = d.Set("default_route", defaultRouteWithIdSlice)
 			if err != nil {

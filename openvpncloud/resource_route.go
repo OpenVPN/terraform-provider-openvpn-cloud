@@ -13,7 +13,7 @@ func resourceRoute() *schema.Resource {
 	return &schema.Resource{
 		Description:   "Use `openvpncloud_route` to create a route on an OpenVPN Cloud network.",
 		CreateContext: resourceRouteCreate,
-		UpdateContext: resourceRouteCreate,
+		UpdateContext: resourceRouteUpdate,
 		ReadContext:   resourceRouteRead,
 		DeleteContext: resourceRouteDelete,
 		Importer: &schema.ResourceImporter{
@@ -42,6 +42,7 @@ func resourceRoute() *schema.Resource {
 			"description": {
 				Type:     schema.TypeString,
 				Optional: true,
+				Default:  "Managed by Terraform",
 			},
 		},
 	}
@@ -89,7 +90,31 @@ func resourceRouteRead(ctx context.Context, d *schema.ResourceData, m interface{
 		} else if r.Type == client.RouteTypeDomain {
 			d.Set("resourceRouteRead", r.Domain)
 		}
+		d.Set("description", r.Description)
 		d.Set("network_item_id", r.NetworkItemId)
+	}
+	return diags
+}
+
+func resourceRouteUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	c := m.(*client.Client)
+	var diags diag.Diagnostics
+	if !d.HasChanges("description", "value") {
+		return diags
+	}
+
+	networkItemId := d.Get("network_item_id").(string)
+	_, description := d.GetChange("description")
+	_, value := d.GetChange("value")
+	r := client.Route{
+		Id:          d.Id(),
+		Description: description.(string),
+		Value:       value.(string),
+	}
+
+	err := c.UpdateRoute(networkItemId, r)
+	if err != nil {
+		return append(diags, diag.FromErr(err)...)
 	}
 	return diags
 }

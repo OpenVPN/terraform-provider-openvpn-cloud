@@ -24,21 +24,25 @@ const (
 )
 
 func (c *Client) CreateRoute(networkId string, route Route) (*Route, error) {
-
 	type newRoute struct {
 		Description string `json:"description"`
 		Value       string `json:"value"`
+		Type        string `json:"type"`
 	}
-
-	var routeToCreate newRoute
-	routeToCreate.Description = "Managed by Terraform. " + route.Description
-	routeToCreate.Value = route.Value
-
+	routeToCreate := newRoute{
+		Description: route.Description,
+		Value:       route.Value,
+		Type:        route.Type,
+	}
 	routeJson, err := json.Marshal(routeToCreate)
 	if err != nil {
 		return nil, err
 	}
-	req, err := http.NewRequest(http.MethodPost, fmt.Sprintf("%s/api/beta/networks/%s/routes", c.BaseURL, networkId), bytes.NewBuffer(routeJson))
+	req, err := http.NewRequest(
+		http.MethodPost,
+		fmt.Sprintf("%s/api/beta/networks/%s/routes", c.BaseURL, networkId),
+		bytes.NewBuffer(routeJson),
+	)
 	if err != nil {
 		return nil, err
 	}
@@ -51,6 +55,8 @@ func (c *Client) CreateRoute(networkId string, route Route) (*Route, error) {
 	if err != nil {
 		return nil, err
 	}
+	// The API does not return the route Value, so we set it manually.
+	r.Value = routeToCreate.Value
 	return &r, nil
 }
 
@@ -116,7 +122,11 @@ func (c *Client) UpdateRoute(networkId string, route Route) error {
 	if err != nil {
 		return err
 	}
-	req, err := http.NewRequest(http.MethodPut, fmt.Sprintf("%s/api/beta/networks/%s/routes/%s", c.BaseURL, networkId, route.Id), bytes.NewBuffer(routeJson))
+	req, err := http.NewRequest(
+		http.MethodPut,
+		fmt.Sprintf("%s/api/beta/networks/%s/routes/%s", c.BaseURL, networkId, route.Id),
+		bytes.NewBuffer(routeJson),
+	)
 	if err != nil {
 		return err
 	}
