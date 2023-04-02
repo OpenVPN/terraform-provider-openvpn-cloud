@@ -74,8 +74,8 @@ func testAccCheckOpenvpncloudConnectorDestroy(s *terraform.State) error {
 func testAccOpenvpncloudConnectorConfigBasic(rName string) string {
 	return fmt.Sprintf(`
 resource "openvpncloud_connector" "test" {
-  name             = "%s"
-  vpn_region_id    = "us_east"
+  name              = "%s"
+  vpn_region_id     = "us-west-1"
   network_item_type = "HOST"
   network_item_id   = "example_network_item_id"
 }
