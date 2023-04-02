@@ -11,15 +11,16 @@ import (
 
 func TestAccOpenvpncloudDnsRecord_basic(t *testing.T) {
 	resourceName := "openvpncloud_dns_record.test"
+	domainName := "test.openvpncloud.com"
 	resource.Test(t, resource.TestCase{
 		PreCheck:          func() { testAccPreCheck(t) },
 		ProviderFactories: testAccProviderFactories,
 		CheckDestroy:      testAccCheckOpenvpncloudDnsRecordDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccOpenvpncloudDnsRecordConfigBasic,
+				Config: testAccOpenvpncloudDnsRecordConfig(domainName),
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr(resourceName, "domain", "test.example.com"),
+					resource.TestCheckResourceAttr(resourceName, "domain", domainName),
 					resource.TestCheckResourceAttr(resourceName, "ip_v4_addresses.0", "192.168.1.1"),
 					resource.TestCheckResourceAttr(resourceName, "ip_v4_addresses.1", "192.168.1.2"),
 					resource.TestCheckResourceAttr(resourceName, "ip_v6_addresses.0", "2001:0db8:85a3:0000:0000:8a2e:0370:7334"),
@@ -53,14 +54,16 @@ func testAccCheckOpenvpncloudDnsRecordDestroy(s *terraform.State) error {
 	return nil
 }
 
-const testAccOpenvpncloudDnsRecordConfigBasic = `
+func testAccOpenvpncloudDnsRecordConfig(domainName string) string {
+	return fmt.Sprintf(`
 provider "openvpncloud" {
   base_url = "https://%[1]s.api.openvpn.com"
 }
 
 resource "openvpncloud_dns_record" "test" {
-  domain          = "test.example.com"
+  domain          = "%[2]s"
   ip_v4_addresses = ["192.168.1.1", "192.168.1.2"]
   ip_v6_addresses = ["2001:0db8:85a3:0000:0000:8a2e:0370:7334", "2001:0db8:85a3:0000:0000:8a2e:0370:7335"]
 }
-`
+`, testCloudID, domainName)
+}
