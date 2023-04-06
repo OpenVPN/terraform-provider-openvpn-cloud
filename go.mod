@@ -3,7 +3,7 @@ module github.com/OpenVPN/terraform-provider-openvpn-cloud
 go 1.19
 
 require (
-	github.com/gruntwork-io/terratest v0.41.16
+	github.com/gruntwork-io/terratest v0.41.17
 	github.com/hashicorp/terraform-plugin-sdk/v2 v2.26.1
 	github.com/stretchr/testify v1.8.2
 	golang.org/x/time v0.3.0
