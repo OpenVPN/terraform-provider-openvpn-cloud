@@ -8,17 +8,16 @@ import (
 )
 
 type User struct {
-	Id            string   `json:"id"`
-	Username      string   `json:"username"`
-	Role          string   `json:"role"`
-	Email         string   `json:"email"`
-	AuthType      string   `json:"authType"`
-	FirstName     string   `json:"firstName"`
-	LastName      string   `json:"lastName"`
-	GroupId       string   `json:"groupId"`
-	Status        string   `json:"status"`
-	AccountStatus string   `json:"accountStatus"`
-	Devices       []Device `json:"devices"`
+	Id        string   `json:"id"`
+	Username  string   `json:"username"`
+	Role      string   `json:"role"`
+	Email     string   `json:"email"`
+	AuthType  string   `json:"authType"`
+	FirstName string   `json:"firstName"`
+	LastName  string   `json:"lastName"`
+	GroupId   string   `json:"groupId"`
+	Status    string   `json:"status"`
+	Devices   []Device `json:"devices"`
 }
 
 type Device struct {

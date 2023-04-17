@@ -188,7 +188,7 @@ func resourceUserUpdate(ctx context.Context, d *schema.ResourceData, m interface
 	_, firstName := d.GetChange("first_name")
 	_, lastName := d.GetChange("last_name")
 	_, role := d.GetChange("role")
-	status := u.AccountStatus
+	status := u.Status
 	oldGroupId, newGroupId := d.GetChange("group_id")
 
 	groupId := newGroupId.(string)
