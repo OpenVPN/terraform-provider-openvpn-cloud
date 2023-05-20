@@ -5,7 +5,7 @@ go 1.19
 require (
 	github.com/gruntwork-io/terratest v0.41.25
 	github.com/hashicorp/terraform-plugin-sdk/v2 v2.26.1
-	github.com/stretchr/testify v1.8.2
+	github.com/stretchr/testify v1.8.3
 	golang.org/x/time v0.3.0
 )
 
