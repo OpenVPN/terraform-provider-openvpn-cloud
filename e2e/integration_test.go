@@ -25,7 +25,7 @@ func TestCreationDeletion(t *testing.T) {
 		NoColor: os.Getenv("NO_COLOR") == "1",
 
 		// The path to where our Terraform code is located
-		TerraformDir: "../example",
+		TerraformDir: "./setup",
 
 		// Variables to pass to our Terraform code using -var options
 		Vars: map[string]interface{}{},
