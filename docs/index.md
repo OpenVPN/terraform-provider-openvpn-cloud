@@ -31,3 +31,6 @@ These credentials can be found in the OpenVPN Cloud Portal.
 Go to the Settings page and click on the API tab. 
 From there, you can enable the API and generate new authentication credentials. 
 Additionally, you'll find Swagger documentation for the API in the same location.
+
+More documentation on the OpenVPN API can be found here:
+[OpenVPN API Documentation](https://openvpn.net/cloud-docs/developer/openvpn-api.html)
