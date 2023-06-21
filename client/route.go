@@ -8,13 +8,13 @@ import (
 )
 
 type Route struct {
-	Id            string `json:"id"`
-	Type          string `json:"type"`
-	Subnet        string `json:"subnet"`
-	Domain        string `json:"domain"`
-	Value         string `json:"value"`
-	NetworkItemId string `json:"networkItemId"`
-	Description   string `json:"description"`
+	Id            string `json:"id,omitempty"`
+	Type          string `json:"type,omitempty"`
+	Subnet        string `json:"subnet,omitempty"`
+	Domain        string `json:"domain,omitempty"`
+	Value         string `json:"value,omitempty"`
+	NetworkItemId string `json:"networkItemId,omitempty"`
+	Description   string `json:"description,omitempty"`
 }
 
 const (

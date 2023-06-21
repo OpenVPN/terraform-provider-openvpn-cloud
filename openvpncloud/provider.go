@@ -45,6 +45,8 @@ func Provider() *schema.Provider {
 			"openvpncloud_dns_record": resourceDnsRecord(),
 			"openvpncloud_user":       resourceUser(),
 			"openvpncloud_host":       resourceHost(),
+			"openvpncloud_user_group": resourceUserGroup(),
+			"openvpncloud_service":    resourceService(),
 		},
 		DataSourcesMap: map[string]*schema.Resource{
 			"openvpncloud_network":        dataSourceNetwork(),
@@ -54,6 +56,7 @@ func Provider() *schema.Provider {
 			"openvpncloud_vpn_region":     dataSourceVpnRegion(),
 			"openvpncloud_network_routes": dataSourceNetworkRoutes(),
 			"openvpncloud_host":           dataSourceHost(),
+			"openvpncloud_service":        dataSourceService(),
 		},
 		ConfigureContextFunc: providerConfigure,
 	}
