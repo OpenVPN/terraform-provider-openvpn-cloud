@@ -23,3 +23,14 @@ Use this provider to interact with the [OpenVPN Cloud API](https://openvpn.net/c
 
 - **client_id** (String, Sensitive) If not provided, it will default to the value of the `OPENVPN_CLOUD_CLIENT_ID` environment variable.
 - **client_secret** (String, Sensitive) If not provided, it will default to the value of the `OPENVPN_CLOUD_CLIENT_SECRET` environment variable.
+
+### Credentials
+
+To authenticate with the OpenVPN Cloud API, you'll need the client_id and client_secret. 
+These credentials can be found in the OpenVPN Cloud Portal. 
+Go to the Settings page and click on the API tab. 
+From there, you can enable the API and generate new authentication credentials. 
+Additionally, you'll find Swagger documentation for the API in the same location.
+
+More documentation on the OpenVPN API can be found here:
+[OpenVPN API Documentation](https://openvpn.net/cloud-docs/developer/openvpn-api.html)
