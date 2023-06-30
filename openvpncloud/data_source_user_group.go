@@ -59,7 +59,7 @@ func dataSourceUserGroupRead(ctx context.Context, d *schema.ResourceData, m inte
 	c := m.(*client.Client)
 	var diags diag.Diagnostics
 	userGroupName := d.Get("name").(string)
-	userGroup, err := c.GetUserGroup(userGroupName)
+	userGroup, err := c.GetUserGroupByName(userGroupName)
 	if err != nil {
 		return append(diags, diag.FromErr(err)...)
 	}

@@ -2,7 +2,6 @@ package openvpncloud
 
 import (
 	"context"
-
 	"github.com/OpenVPN/terraform-provider-openvpn-cloud/client"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -195,7 +194,7 @@ func resourceUserUpdate(ctx context.Context, d *schema.ResourceData, m interface
 	// If both are empty strings, then the group has not been set explicitly.
 	// The update endpoint requires group_id to be set, so we should set it to the default group.
 	if oldGroupId.(string) == "" && groupId == "" {
-		g, err := c.GetUserGroup("Default")
+		g, err := c.GetUserGroupByName("Default")
 		if err != nil {
 			return append(diags, diag.FromErr(err)...)
 		}
