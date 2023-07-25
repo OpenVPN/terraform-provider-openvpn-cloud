@@ -60,7 +60,8 @@ func resourceUserGroup() *schema.Resource {
 			},
 			"vpn_region_ids": {
 				Type:        schema.TypeList,
-				Optional:    true,
+				Required:    true,
+				MinItems:    1,
 				Description: "A list of VPN regions that are accessible to the user group.",
 				Elem: &schema.Schema{
 					Type: schema.TypeString,
