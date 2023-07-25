@@ -30,6 +30,7 @@ func resourceService() *schema.Resource {
 			},
 			"description": {
 				Type:         schema.TypeString,
+				Default:      "Created by Terraform OpenVPN Cloud Provider",
 				ValidateFunc: validation.StringLenBetween(1, 255),
 				Optional:     true,
 			},
