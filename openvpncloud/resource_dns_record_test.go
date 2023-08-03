@@ -21,6 +21,7 @@ func TestAccOpenvpncloudDnsRecord_basic(t *testing.T) {
 				Config: testAccOpenvpncloudDnsRecordConfig(domainName),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(resourceName, "domain", domainName),
+					resource.TestCheckResourceAttr(resourceName, "description", "test description"),
 					resource.TestCheckResourceAttr(resourceName, "ip_v4_addresses.0", "192.168.1.1"),
 					resource.TestCheckResourceAttr(resourceName, "ip_v4_addresses.1", "192.168.1.2"),
 					resource.TestCheckResourceAttr(resourceName, "ip_v6_addresses.0", "2001:db8:85a3:0:0:8a2e:370:7334"),
@@ -62,6 +63,7 @@ provider "openvpncloud" {
 
 resource "openvpncloud_dns_record" "test" {
   domain          = "%[2]s"
+  description     = "test description"
   ip_v4_addresses = ["192.168.1.1", "192.168.1.2"]
   ip_v6_addresses = ["2001:db8:85a3:0:0:8a2e:370:7334", "2001:db8:85a3:0:0:8a2e:370:7335"]
 }
