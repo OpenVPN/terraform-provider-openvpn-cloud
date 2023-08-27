@@ -10,6 +10,7 @@ import (
 type DnsRecord struct {
 	Id            string   `json:"id"`
 	Domain        string   `json:"domain"`
+	Description   string   `json:"description"`
 	IPV4Addresses []string `json:"ipv4Addresses"`
 	IPV6Addresses []string `json:"ipv6Addresses"`
 }

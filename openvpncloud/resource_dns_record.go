@@ -26,6 +26,13 @@ func resourceDnsRecord() *schema.Resource {
 				ForceNew:    true,
 				Description: "The DNS record name.",
 			},
+			"description": {
+				Type:         schema.TypeString,
+				Optional:     true,
+				Default:      "Managed by Terraform",
+				ValidateFunc: validation.StringLenBetween(1, 120),
+				Description:  "The description for the UI. Defaults to `Managed by Terraform`.",
+			},
 			"ip_v4_addresses": {
 				Type:     schema.TypeList,
 				Optional: true,
@@ -52,6 +59,7 @@ func resourceDnsRecordCreate(ctx context.Context, d *schema.ResourceData, m inte
 	c := m.(*client.Client)
 	var diags diag.Diagnostics
 	domain := d.Get("domain").(string)
+	description := d.Get("description").(string)
 	ipV4Addresses := d.Get("ip_v4_addresses").([]interface{})
 	ipV4AddressesSlice := make([]string, 0)
 	for _, a := range ipV4Addresses {
@@ -64,6 +72,7 @@ func resourceDnsRecordCreate(ctx context.Context, d *schema.ResourceData, m inte
 	}
 	dr := client.DnsRecord{
 		Domain:        domain,
+		Description:   description,
 		IPV4Addresses: ipV4AddressesSlice,
 		IPV6Addresses: ipV6AddressesSlice,
 	}
@@ -87,6 +96,7 @@ func resourceDnsRecordRead(ctx context.Context, d *schema.ResourceData, m interf
 		d.SetId("")
 	} else {
 		d.Set("domain", r.Domain)
+		d.Set("description", r.Description)
 		d.Set("ip_v4_addresses", r.IPV4Addresses)
 		d.Set("ip_v6_addresses", r.IPV6Addresses)
 	}
@@ -97,6 +107,7 @@ func resourceDnsRecordUpdate(ctx context.Context, d *schema.ResourceData, m inte
 	c := m.(*client.Client)
 	var diags diag.Diagnostics
 	_, domain := d.GetChange("domain")
+	_, description := d.GetChange("description")
 	_, ipV4Addresses := d.GetChange("ip_v4_addresses")
 	ipV4AddressesSlice := getAddressesSlice(ipV4Addresses.([]interface{}))
 	_, ipV6Addresses := d.GetChange("ip_v6_addresses")
@@ -104,6 +115,7 @@ func resourceDnsRecordUpdate(ctx context.Context, d *schema.ResourceData, m inte
 	dr := client.DnsRecord{
 		Id:            d.Id(),
 		Domain:        domain.(string),
+		Description:   description.(string),
 		IPV4Addresses: ipV4AddressesSlice,
 		IPV6Addresses: ipV6AddressesSlice,
 	}
