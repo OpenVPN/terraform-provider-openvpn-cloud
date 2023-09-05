@@ -88,9 +88,31 @@ func resourceServiceConfig() *schema.Resource {
 				Optional: true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
+						"protocol": {
+							Type:         schema.TypeString,
+							Required:     true,
+							ValidateFunc: validation.StringInSlice([]string{"TCP", "UDP", "ICMP"}, false),
+							Description:  "The description for the UI. Defaults to `Managed by Terraform`.",
+						},
+						"port": {
+							Type:     schema.TypeList,
+							Required: false,
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"lower_value": {
+										Type:     schema.TypeInt,
+										Required: true,
+									},
+									"upper_value": {
+										Type:     schema.TypeInt,
+										Required: true,
+									},
+								},
+							},
+						},
 						"icmp_type": {
 							Type:     schema.TypeList,
-							Required: true,
+							Required: false,
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
 									"lower_value": {
@@ -181,14 +203,16 @@ func flattenCustomServiceTypes(types []*client.CustomServiceType) interface{} {
 		data = append(
 			data,
 			map[string]interface{}{
-				"icmp_type": flattenIcmpType(t.IcmpType),
+				"icmp_type": flattenPorts(t.IcmpType),
+				"port":      flattenPorts(t.Port),
+				"protocol":  t.Protocol,
 			},
 		)
 	}
 	return data
 }
 
-func flattenIcmpType(icmpType []client.Range) interface{} {
+func flattenPorts(icmpType []client.Range) interface{} {
 	var data []interface{}
 	for _, t := range icmpType {
 		data = append(
@@ -249,21 +273,16 @@ func resourceDataToService(data *schema.ResourceData) *client.Service {
 		mainConfig := configList[0].(map[string]interface{})
 		for _, r := range mainConfig["custom_service_types"].([]interface{}) {
 			cst := r.(map[string]interface{})
-			var icmpTypes []client.Range
-			for _, r := range cst["icmp_type"].([]interface{}) {
-				icmpType := r.(map[string]interface{})
-				icmpTypes = append(
-					icmpTypes,
-					client.Range{
-						LowerValue: icmpType["lower_value"].(int),
-						UpperValue: icmpType["upper_value"].(int),
-					},
-				)
-			}
+			icmpTypes := getPortsFromField(cst, "icmp_type")
+			ports := getPortsFromField(cst, "port")
+			protocol := cst["protocol"].(string)
+
 			config.CustomServiceTypes = append(
 				config.CustomServiceTypes,
 				&client.CustomServiceType{
+					Protocol: protocol,
 					IcmpType: icmpTypes,
+					Port:     ports,
 				},
 			)
 		}
@@ -283,4 +302,19 @@ func resourceDataToService(data *schema.ResourceData) *client.Service {
 		Config:          &config,
 	}
 	return s
+}
+
+func getPortsFromField(cst map[string]interface{}, fieldName string) []client.Range {
+	var icmpTypes []client.Range
+	for _, r := range cst[fieldName].([]interface{}) {
+		icmpType := r.(map[string]interface{})
+		icmpTypes = append(
+			icmpTypes,
+			client.Range{
+				LowerValue: icmpType["lower_value"].(int),
+				UpperValue: icmpType["upper_value"].(int),
+			},
+		)
+	}
+	return icmpTypes
 }
