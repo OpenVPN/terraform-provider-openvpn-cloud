@@ -305,16 +305,16 @@ func resourceDataToService(data *schema.ResourceData) *client.Service {
 }
 
 func getPortsFromField(cst map[string]interface{}, fieldName string) []client.Range {
-	var icmpTypes []client.Range
+	var ranges []client.Range
 	for _, r := range cst[fieldName].([]interface{}) {
-		icmpType := r.(map[string]interface{})
-		icmpTypes = append(
-			icmpTypes,
+		rangeElem := r.(map[string]interface{})
+		ranges = append(
+			ranges,
 			client.Range{
-				LowerValue: icmpType["lower_value"].(int),
-				UpperValue: icmpType["upper_value"].(int),
+				LowerValue: rangeElem["lower_value"].(int),
+				UpperValue: rangeElem["upper_value"].(int),
 			},
 		)
 	}
-	return icmpTypes
+	return ranges
 }
