@@ -1,9 +1,7 @@
 provider "openvpncloud" {
-  base_url      = "https://${var.company_name}.api.openvpn.com"
-  client_id     = var.client_id
-  client_secret = var.client_secret
+  base_url = "https://${var.company_name}.api.openvpn.com"
 }
 
-## Use ENV variables:
-# export TF_VAR_client_id=''
-# export TF_VAR_client_secret=''
+## Environment Variables example:
+# export OPENVPN_CLOUD_CLIENT_ID=""
+# export OPENVPN_CLOUD_CLIENT_SECRET=""
