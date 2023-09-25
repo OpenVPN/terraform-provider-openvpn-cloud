@@ -1,3 +1,9 @@
+variable "company_name" {
+  type        = string
+  description = "Company name in OpenVPN Cloud"
+  # default = ""
+}
+
 variable "users" {
   type = map(
     object({
