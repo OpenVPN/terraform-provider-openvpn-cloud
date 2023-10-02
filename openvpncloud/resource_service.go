@@ -93,7 +93,6 @@ func resourceServiceConfig() *schema.Resource {
 							Type:         schema.TypeString,
 							Required:     true,
 							ValidateFunc: validation.StringInSlice([]string{"TCP", "UDP", "ICMP"}, false),
-							Description:  "The description for the UI. Defaults to `Managed by Terraform`.",
 						},
 						"port": {
 							Type:     schema.TypeList,
@@ -101,12 +100,22 @@ func resourceServiceConfig() *schema.Resource {
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
 									"lower_value": {
-										Type:     schema.TypeInt,
-										Required: true,
+										Type:         schema.TypeInt,
+										Optional:     true,
+										ValidateFunc: validation.IntBetween(0, 65535),
+										Description:  "This argument is designed to be used to define range of ports",
 									},
 									"upper_value": {
-										Type:     schema.TypeInt,
-										Required: true,
+										Type:         schema.TypeInt,
+										Optional:     true,
+										ValidateFunc: validation.IntBetween(0, 65535),
+										Description:  "This argument is designed to be used to define range of ports",
+									},
+									"value": {
+										Type:         schema.TypeInt,
+										Optional:     true,
+										ValidateFunc: validation.IntBetween(0, 65535),
+										Description:  "This argument is designed to be used to define singular port",
 									},
 								},
 							},
@@ -117,12 +126,14 @@ func resourceServiceConfig() *schema.Resource {
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
 									"lower_value": {
-										Type:     schema.TypeInt,
-										Required: true,
+										Type:         schema.TypeInt,
+										Optional:     true,
+										ValidateFunc: validation.IntBetween(0, 255),
 									},
 									"upper_value": {
-										Type:     schema.TypeInt,
-										Required: true,
+										Type:         schema.TypeInt,
+										Optional:     true,
+										ValidateFunc: validation.IntBetween(0, 255),
 									},
 								},
 							},
@@ -314,6 +325,7 @@ func getPortsFromField(cst map[string]interface{}, fieldName string) []client.Ra
 			client.Range{
 				LowerValue: rangeElem["lower_value"].(int),
 				UpperValue: rangeElem["upper_value"].(int),
+				Value:      rangeElem["value"].(int),
 			},
 		)
 	}
