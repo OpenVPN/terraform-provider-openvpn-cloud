@@ -1,4 +1,4 @@
-resource "openvpncloud_host" "this" {
+resource "openvpncloud_host" "test-host" {
   name = "test-host"
   connector {
     name          = "test-connector"

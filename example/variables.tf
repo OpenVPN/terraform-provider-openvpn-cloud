@@ -1,6 +1,6 @@
 variable "company_name" {
   type        = string
-  description = "Company name in OpenVPN Cloud"
+  description = "Company name in CloudConnexa"
   # default = ""
 }
 
@@ -14,21 +14,21 @@ variable "users" {
     })
   )
   default = {
-    "Denis_Arslanbekov" = {
-      username = "Arslanbekov_admin"
-      email    = "admin@arslanbekov.com"
+    "Username1" = {
+      username = "Username1"
+      email    = "username1@company.com"
       group    = "Default"
       role     = "ADMIN"
     }
-    "Vladimir_Kozyrev" = {
-      username = "Arslanbekov_developer"
-      email    = "developer@arslanbekov.com"
+    "Username2" = {
+      username = "Username2"
+      email    = "username2@company.com"
       group    = "Developer"
       role     = "MEMBER"
     }
-    "Antonio_Graziano" = {
-      username = "Arslanbekov_support"
-      email    = "support@arslanbekov.com"
+    "Username3" = {
+      username = "Username3"
+      email    = "username3@company.com"
       group    = "Support"
       role     = "MEMBER"
     }
@@ -38,33 +38,33 @@ variable "users" {
 variable "groups" {
   type = map(string)
   default = {
-    "Default"   = "12312312-1234-1234-1234-123123123123"
-    "Developer" = "12312312-1234-1234-1234-123123123123"
-    "Support"   = "12312312-1234-1234-1234-123123123123"
+    "Default"   = "11111111-1111-1111-1111-111111111111"
+    "Developer" = "22222222-1111-1111-1111-111111111111"
+    "Support"   = "33333333-1111-1111-1111-111111111111"
   }
 }
 
 variable "networks" {
   type = map(string)
   default = {
-    "example-network" = "12312312-1234-1234-1234-123123123123"
+    "example-network" = "11111111-2222-3333-4444-555555555555"
   }
 }
 
-variable "example-terraform_ipv4_routes" {
+variable "routes" {
   type = list(map(string))
   default = [
     {
-      value       = "10.0.0.0/24"
-      description = "Example route 1"
+      value       = "10.0.0.0/18"
+      description = "Example Route with subnet /18"
     },
     {
-      value       = "10.10.0.0/24"
-      description = "Example route 2"
+      value       = "10.10.0.0/20"
+      description = "Example Route with subnet /20"
     },
     {
       value       = "10.20.0.0/24"
-      description = "Example route 3"
+      description = "Example Route with subnet /24"
     },
   ]
 }
