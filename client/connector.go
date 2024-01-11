@@ -21,6 +21,16 @@ type Connector struct {
 	ConnectionStatus ConnectionStatus `json:"connectionStatus"`
 }
 
+type ConnectorPageResponse struct {
+	Content          []Connector `json:"content"`
+	NumberOfElements int         `json:"numberOfElements"`
+	Page             int         `json:"page"`
+	Size             int         `json:"size"`
+	Success          bool        `json:"success"`
+	TotalElements    int         `json:"totalElements"`
+	TotalPages       int         `json:"totalPages"`
+}
+
 const (
 	NetworkItemTypeHost    = "HOST"
 	NetworkItemTypeNetwork = "NETWORK"
@@ -31,85 +41,119 @@ const (
 	ConnectionStatusOnline  ConnectionStatus = "ONLINE"
 )
 
-func (c *Client) GetConnectors() ([]Connector, error) {
-	req, err := http.NewRequest(http.MethodGet, fmt.Sprintf("%s/api/beta/connectors", c.BaseURL), nil)
+func (c *Client) GetConnectorsByPage(page int, pageSize int) (ConnectorPageResponse, error) {
+	endpoint := fmt.Sprintf("%s/api/beta/connectors/page?page=%d&size=%d", c.BaseURL, page, pageSize)
+	req, err := http.NewRequest(http.MethodGet, endpoint, nil)
 	if err != nil {
-		return nil, err
+		return ConnectorPageResponse{}, err
 	}
+
 	body, err := c.DoRequest(req)
 	if err != nil {
-		return nil, err
+		return ConnectorPageResponse{}, err
 	}
-	var connectors []Connector
-	err = json.Unmarshal(body, &connectors)
+
+	var response ConnectorPageResponse
+	err = json.Unmarshal(body, &response)
 	if err != nil {
-		return nil, err
+		return ConnectorPageResponse{}, err
 	}
-	return connectors, nil
+	return response, nil
+}
+
+func (c *Client) GetAllConnectors() ([]Connector, error) {
+	var allConnectors []Connector
+	page := 1
+	pageSize := 10
+
+	for {
+		response, err := c.GetConnectorsByPage(page, pageSize)
+		if err != nil {
+			return nil, err
+		}
+
+		allConnectors = append(allConnectors, response.Content...)
+
+		if page >= response.TotalPages {
+			break
+		}
+		page++
+	}
+	return allConnectors, nil
 }
 
 func (c *Client) GetConnectorByName(name string) (*Connector, error) {
-	connectors, err := c.GetConnectors()
+	connectors, err := c.GetAllConnectors()
 	if err != nil {
 		return nil, err
 	}
-	for _, c := range connectors {
-		if c.Name == name {
-			return &c, nil
+
+	for _, connector := range connectors {
+		if connector.Name == name {
+			return &connector, nil
 		}
 	}
 	return nil, nil
 }
 
 func (c *Client) GetConnectorById(connectorId string) (*Connector, error) {
-	connectors, err := c.GetConnectors()
+	connectors, err := c.GetAllConnectors()
 	if err != nil {
 		return nil, err
 	}
-	for _, c := range connectors {
-		if c.Id == connectorId {
-			return &c, nil
+
+	for _, connector := range connectors {
+		if connector.Id == connectorId {
+			return &connector, nil
 		}
 	}
 	return nil, nil
 }
 
 func (c *Client) GetConnectorsForNetwork(networkId string) ([]Connector, error) {
-	req, err := http.NewRequest(http.MethodGet, fmt.Sprintf("%s/api/beta/connectors", c.BaseURL), nil)
+	connectors, err := c.GetAllConnectors()
 	if err != nil {
 		return nil, err
 	}
-	body, err := c.DoRequest(req)
-	if err != nil {
-		return nil, err
-	}
-	var connectors []Connector
-	err = json.Unmarshal(body, &connectors)
-	if err != nil {
-		return nil, err
-	}
+
 	var networkConnectors []Connector
-	for _, v := range connectors {
-		if v.NetworkItemId == networkId {
-			networkConnectors = append(networkConnectors, v)
+	for _, connector := range connectors {
+		if connector.NetworkItemId == networkId {
+			networkConnectors = append(networkConnectors, connector)
 		}
 	}
 	return networkConnectors, nil
 }
 
-func (c *Client) AddConnector(connector Connector, networkItemId string) (*Connector, error) {
+func (c *Client) GetConnectorProfile(id string) (string, error) {
+	req, err := http.NewRequest(http.MethodPost, fmt.Sprintf("%s/api/beta/connectors/%s/profile", c.BaseURL, id), nil)
+	if err != nil {
+		return "", err
+	}
+
+	body, err := c.DoRequest(req)
+	if err != nil {
+		return "", err
+	}
+	return string(body), nil
+}
+
+func (c *Client) CreateConnector(connector Connector, networkItemId string) (*Connector, error) {
 	connectorJson, err := json.Marshal(connector)
 	if err != nil {
 		return nil, err
 	}
+
 	req, err := http.NewRequest(http.MethodPost, fmt.Sprintf("%s/api/beta/connectors?networkItemId=%s&networkItemType=%s", c.BaseURL, networkItemId, connector.NetworkItemType), bytes.NewBuffer(connectorJson))
 	if err != nil {
 		return nil, err
 	}
+
 	body, err := c.DoRequest(req)
 	if err != nil {
 		return nil, err
 	}
+
 	var conn Connector
 	err = json.Unmarshal(body, &conn)
 	if err != nil {
@@ -123,19 +167,7 @@ func (c *Client) DeleteConnector(connectorId string, networkItemId string, netwo
 	if err != nil {
 		return err
 	}
+
 	_, err = c.DoRequest(req)
 	return err
-}
-
-func (c *Client) GetConnectorProfile(id string) (string, error) {
-	req, err := http.NewRequest(http.MethodPost, fmt.Sprintf("%s/api/beta/connectors/%s/profile", c.BaseURL, id), nil)
-	if err != nil {
-		return "", err
-	}
-	body, err := c.DoRequest(req)
-	if err != nil {
-		return "", err
-	}
-
-	return string(body), nil
 }
