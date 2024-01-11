@@ -11,10 +11,18 @@ type Route struct {
 	Id            string `json:"id,omitempty"`
 	Type          string `json:"type,omitempty"`
 	Subnet        string `json:"subnet,omitempty"`
-	Domain        string `json:"domain,omitempty"`
-	Value         string `json:"value,omitempty"`
-	NetworkItemId string `json:"networkItemId,omitempty"`
 	Description   string `json:"description,omitempty"`
+	NetworkItemId string `json:"networkItemId,omitempty"`
+}
+
+type RoutePageResponse struct {
+	Success          bool    `json:"success"`
+	Content          []Route `json:"content"`
+	TotalElements    int     `json:"totalElements"`
+	TotalPages       int     `json:"totalPages"`
+	NumberOfElements int     `json:"numberOfElements"`
+	Page             int     `json:"page"`
+	Size             int     `json:"size"`
 }
 
 const (
@@ -23,74 +31,52 @@ const (
 	RouteTypeDomain = "DOMAIN"
 )
 
-func (c *Client) CreateRoute(networkId string, route Route) (*Route, error) {
-	type newRoute struct {
-		Description string `json:"description"`
-		Value       string `json:"value"`
-		Type        string `json:"type"`
-	}
-	routeToCreate := newRoute{
-		Description: route.Description,
-		Value:       route.Value,
-		Type:        route.Type,
-	}
-	routeJson, err := json.Marshal(routeToCreate)
+func (c *Client) GetRoutesByPage(networkId string, page int, size int) (RoutePageResponse, error) {
+	req, err := http.NewRequest(http.MethodGet, fmt.Sprintf("%s/api/beta/networks/%s/routes/page?page=%d&size=%d", c.BaseURL, networkId, page, size), nil)
 	if err != nil {
-		return nil, err
+		return RoutePageResponse{}, err
 	}
-	req, err := http.NewRequest(
-		http.MethodPost,
-		fmt.Sprintf("%s/api/beta/networks/%s/routes", c.BaseURL, networkId),
-		bytes.NewBuffer(routeJson),
-	)
-	if err != nil {
-		return nil, err
-	}
+
 	body, err := c.DoRequest(req)
 	if err != nil {
-		return nil, err
+		return RoutePageResponse{}, err
 	}
-	var r Route
-	err = json.Unmarshal(body, &r)
+
+	var response RoutePageResponse
+	err = json.Unmarshal(body, &response)
 	if err != nil {
-		return nil, err
+		return RoutePageResponse{}, err
 	}
-	// The API does not return the route Value, so we set it manually.
-	r.Value = routeToCreate.Value
-	return &r, nil
+	return response, nil
 }
 
-func (c *Client) DeleteRoute(networkId string, routeId string) error {
-	req, err := http.NewRequest(http.MethodDelete, fmt.Sprintf("%s/api/beta/networks/%s/routes/%s", c.BaseURL, networkId, routeId), nil)
-	if err != nil {
-		return err
-	}
-	_, err = c.DoRequest(req)
-	return err
-}
+func (c *Client) GetAllRoutes(networkId string) ([]Route, error) {
+	var allRoutes []Route
+	pageSize := 10
+	page := 1
 
-func (c *Client) GetRoutes(networkId string) ([]Route, error) {
-	req, err := http.NewRequest(http.MethodGet, fmt.Sprintf("%s/api/beta/networks/%s/routes", c.BaseURL, networkId), nil)
-	if err != nil {
-		return nil, err
+	for {
+		response, err := c.GetRoutesByPage(networkId, page, pageSize)
+		if err != nil {
+			return nil, err
+		}
+
+		allRoutes = append(allRoutes, response.Content...)
+
+		if page >= response.TotalPages {
+			break
+		}
+		page++
 	}
-	body, err := c.DoRequest(req)
-	if err != nil {
-		return nil, err
-	}
-	var routes []Route
-	err = json.Unmarshal(body, &routes)
-	if err != nil {
-		return nil, err
-	}
-	return routes, nil
+	return allRoutes, nil
 }
 
 func (c *Client) GetNetworkRoute(networkId string, routeId string) (*Route, error) {
-	routes, err := c.GetRoutes(networkId)
+	routes, err := c.GetAllRoutes(networkId)
 	if err != nil {
 		return nil, err
 	}
+
 	for _, r := range routes {
 		if r.Id == routeId {
 			return &r, nil
@@ -100,21 +86,63 @@ func (c *Client) GetNetworkRoute(networkId string, routeId string) (*Route, erro
 }
 
 func (c *Client) GetRouteById(routeId string) (*Route, error) {
-	networks, err := c.GetNetworks()
+	networks, err := c.GetAllNetworks()
 	if err != nil {
 		return nil, err
 	}
+
 	for _, n := range networks {
-		r, err := c.GetNetworkRoute(n.Id, routeId)
+		routes, err := c.GetAllRoutes(n.Id)
 		if err != nil {
-			return nil, err
+			continue
 		}
-		if r != nil {
-			r.NetworkItemId = n.Id
-			return r, nil
+		for _, r := range routes {
+			if r.Id == routeId {
+				r.NetworkItemId = n.Id
+				return &r, nil
+			}
 		}
 	}
 	return nil, nil
+}
+
+func (c *Client) CreateRoute(networkId string, route Route) (*Route, error) {
+	type newRoute struct {
+		Description string `json:"description"`
+		Subnet      string `json:"subnet"`
+	}
+	routeToCreate := newRoute{
+		Description: route.Description,
+		Subnet:      route.Subnet,
+	}
+	routeJson, err := json.Marshal(routeToCreate)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(
+		http.MethodPost,
+		fmt.Sprintf("%s/api/beta/networks/%s/routes", c.BaseURL, networkId),
+		bytes.NewBuffer(routeJson),
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	body, err := c.DoRequest(req)
+	if err != nil {
+		return nil, err
+	}
+
+	var r Route
+	err = json.Unmarshal(body, &r)
+	if err != nil {
+		return nil, err
+	}
+
+	// The API does not return the route Value, so we set it manually.
+	r.Subnet = routeToCreate.Subnet
+	return &r, nil
 }
 
 func (c *Client) UpdateRoute(networkId string, route Route) error {
@@ -122,6 +150,7 @@ func (c *Client) UpdateRoute(networkId string, route Route) error {
 	if err != nil {
 		return err
 	}
+
 	req, err := http.NewRequest(
 		http.MethodPut,
 		fmt.Sprintf("%s/api/beta/networks/%s/routes/%s", c.BaseURL, networkId, route.Id),
@@ -130,6 +159,17 @@ func (c *Client) UpdateRoute(networkId string, route Route) error {
 	if err != nil {
 		return err
 	}
+
+	_, err = c.DoRequest(req)
+	return err
+}
+
+func (c *Client) DeleteRoute(networkId string, routeId string) error {
+	req, err := http.NewRequest(http.MethodDelete, fmt.Sprintf("%s/api/beta/networks/%s/routes/%s", c.BaseURL, networkId, routeId), nil)
+	if err != nil {
+		return err
+	}
+
 	_, err = c.DoRequest(req)
 	return err
 }
