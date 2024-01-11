@@ -1,4 +1,4 @@
-resource "openvpncloud_network" "test-network" {
+resource "cloudconnexa_network" "test-network" {
   name   = "test-network"
   egress = false
   default_route {

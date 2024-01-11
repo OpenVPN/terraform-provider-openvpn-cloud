@@ -1,4 +1,4 @@
-resource "openvpncloud_route" "this" {
+resource "cloudconnexa_route" "this" {
   for_each = {
     for key, route in var.routes : route.value => route
   }

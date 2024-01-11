@@ -23,7 +23,7 @@ terraform.tfstate
 *.iml
 
 # Binaries
-terraform-provider-sentry
+terraform-provider-cloudconnexa
 main
 
 # Keep windows files with windows line endings

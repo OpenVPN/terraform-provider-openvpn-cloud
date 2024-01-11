@@ -12,9 +12,9 @@ import (
 )
 
 const (
-	OpenvpnHostKey              = "OVPN_HOST"
-	OpenvpnCloudClientIdKey     = "OPENVPN_CLOUD_CLIENT_ID"
-	OpenvpnCloudClientSecretKey = "OPENVPN_CLOUD_CLIENT_SECRET"
+	CloudConnexaHostKey         = "OVPN_HOST"
+	CloudConnexaClientIdKey     = "CLOUDCONNEXA_CLIENT_ID"
+	CloudConnexaClientSecretKey = "CLOUDCONNEXA_CLIENT_SECRET"
 )
 
 func TestCreationDeletion(t *testing.T) {
@@ -47,9 +47,9 @@ func TestCreationDeletion(t *testing.T) {
 	assert.NotEmpty(t, connectorID)
 
 	client, err := api.NewClient(
-		os.Getenv(OpenvpnHostKey),
-		os.Getenv(OpenvpnCloudClientIdKey),
-		os.Getenv(OpenvpnCloudClientSecretKey),
+		os.Getenv(CloudConnexaHostKey),
+		os.Getenv(CloudConnexaClientIdKey),
+		os.Getenv(CloudConnexaClientSecretKey),
 	)
 	require.NoError(t, err)
 
@@ -72,9 +72,9 @@ func TestCreationDeletion(t *testing.T) {
 }
 
 func validateEnvVars(t *testing.T) {
-	validateEnvVar(t, OpenvpnHostKey)
-	validateEnvVar(t, OpenvpnCloudClientIdKey)
-	validateEnvVar(t, OpenvpnCloudClientSecretKey)
+	validateEnvVar(t, CloudConnexaHostKey)
+	validateEnvVar(t, CloudConnexaClientIdKey)
+	validateEnvVar(t, CloudConnexaClientSecretKey)
 }
 
 func validateEnvVar(t *testing.T, envVar string) {
