@@ -38,16 +38,16 @@ variable "users" {
 variable "groups" {
   type = map(string)
   default = {
-    "Default"   = "11111111-1111-1111-1111-111111111111"
-    "Developer" = "22222222-1111-1111-1111-111111111111"
-    "Support"   = "33333333-1111-1111-1111-111111111111"
+    "Default"   = "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
+    "Developer" = "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
+    "Support"   = "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
   }
 }
 
 variable "networks" {
   type = map(string)
   default = {
-    "example-network" = "11111111-2222-3333-4444-555555555555"
+    "example-network" = "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
   }
 }
 
