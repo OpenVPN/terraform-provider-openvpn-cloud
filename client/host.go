@@ -16,28 +16,62 @@ type Host struct {
 	Connectors     []Connector `json:"connectors"`
 }
 
-func (c *Client) GetHosts() ([]Host, error) {
-	req, err := http.NewRequest(http.MethodGet, fmt.Sprintf("%s/api/beta/hosts", c.BaseURL), nil)
+type HostPageResponse struct {
+	Content          []Host `json:"content"`
+	NumberOfElements int    `json:"numberOfElements"`
+	Page             int    `json:"page"`
+	Size             int    `json:"size"`
+	Success          bool   `json:"success"`
+	TotalElements    int    `json:"totalElements"`
+	TotalPages       int    `json:"totalPages"`
+}
+
+func (c *Client) GetHostsByPage(page int, size int) (HostPageResponse, error) {
+	req, err := http.NewRequest(http.MethodGet, fmt.Sprintf("%s/api/beta/hosts/page?page=%d&size=%d", c.BaseURL, page, size), nil)
 	if err != nil {
-		return nil, err
+		return HostPageResponse{}, err
 	}
+
 	body, err := c.DoRequest(req)
 	if err != nil {
-		return nil, err
+		return HostPageResponse{}, err
 	}
-	var hosts []Host
-	err = json.Unmarshal(body, &hosts)
+
+	var response HostPageResponse
+	err = json.Unmarshal(body, &response)
 	if err != nil {
-		return nil, err
+		return HostPageResponse{}, err
 	}
-	return hosts, nil
+	return response, nil
+}
+
+func (c *Client) GetAllHosts() ([]Host, error) {
+	var allHosts []Host
+	pageSize := 10
+	page := 1
+
+	for {
+		response, err := c.GetHostsByPage(page, pageSize)
+		if err != nil {
+			return nil, err
+		}
+
+		allHosts = append(allHosts, response.Content...)
+
+		if page >= response.TotalPages {
+			break
+		}
+		page++
+	}
+	return allHosts, nil
 }
 
 func (c *Client) GetHostByName(name string) (*Host, error) {
-	hosts, err := c.GetHosts()
+	hosts, err := c.GetAllHosts()
 	if err != nil {
 		return nil, err
 	}
+
 	for _, h := range hosts {
 		if h.Name == name {
 			return &h, nil
@@ -47,10 +81,11 @@ func (c *Client) GetHostByName(name string) (*Host, error) {
 }
 
 func (c *Client) GetHostById(hostId string) (*Host, error) {
-	hosts, err := c.GetHosts()
+	hosts, err := c.GetAllHosts()
 	if err != nil {
 		return nil, err
 	}
+
 	for _, h := range hosts {
 		if h.Id == hostId {
 			return &h, nil
@@ -64,14 +99,17 @@ func (c *Client) CreateHost(host Host) (*Host, error) {
 	if err != nil {
 		return nil, err
 	}
+
 	req, err := http.NewRequest(http.MethodPost, fmt.Sprintf("%s/api/beta/hosts", c.BaseURL), bytes.NewBuffer(hostJson))
 	if err != nil {
 		return nil, err
 	}
+
 	body, err := c.DoRequest(req)
 	if err != nil {
 		return nil, err
 	}
+
 	var h Host
 	err = json.Unmarshal(body, &h)
 	if err != nil {
@@ -85,10 +123,12 @@ func (c *Client) UpdateHost(host Host) error {
 	if err != nil {
 		return err
 	}
+
 	req, err := http.NewRequest(http.MethodPut, fmt.Sprintf("%s/api/beta/hosts/%s", c.BaseURL, host.Id), bytes.NewBuffer(hostJson))
 	if err != nil {
 		return err
 	}
+
 	_, err = c.DoRequest(req)
 	return err
 }
@@ -98,6 +138,7 @@ func (c *Client) DeleteHost(hostId string) error {
 	if err != nil {
 		return err
 	}
+
 	_, err = c.DoRequest(req)
 	return err
 }
