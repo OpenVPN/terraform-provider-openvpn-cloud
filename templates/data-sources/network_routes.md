@@ -3,12 +3,12 @@
 page_title: "cloudconnexa_network_routes Data Source - terraform-provider-cloudconnexa"
 subcategory: ""
 description: |-
-  Use an cloudconnexa_network_routes data source to read all the routes associated with an OpenVPN Cloud network.
+  Use an cloudconnexa_network_routes data source to read all the routes associated with an Cloud Connexa network.
 ---
 
 # cloudconnexa_network_routes (Data Source)
 
-Use an `cloudconnexa_network_routes` data source to read all the routes associated with an OpenVPN Cloud network.
+Use an `cloudconnexa_network_routes` data source to read all the routes associated with an Cloud Connexa network.
 
 
 
@@ -17,7 +17,7 @@ Use an `cloudconnexa_network_routes` data source to read all the routes associat
 
 ### Required
 
-- `network_item_id` (String) The id of the OpenVPN Cloud network of the routes to be discovered.
+- `network_item_id` (String) The id of the Cloud Connexa network of the routes to be discovered.
 
 ### Read-Only
 

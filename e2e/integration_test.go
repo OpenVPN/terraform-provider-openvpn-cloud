@@ -2,8 +2,8 @@ package e2e
 
 import (
 	"fmt"
-	api "github.com/OpenVPN/terraform-provider-openvpn-cloud/client"
 	"github.com/gruntwork-io/terratest/modules/terraform"
+	api "github.com/openvpn/cloudconnexa-go-client/v2/cloudconnexa"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"os"

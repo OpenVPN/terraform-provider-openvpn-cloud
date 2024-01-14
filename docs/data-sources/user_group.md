@@ -3,12 +3,12 @@
 page_title: "cloudconnexa_user_group Data Source - terraform-provider-cloudconnexa"
 subcategory: ""
 description: |-
-  Use an cloudconnexa_user_group data source to read an OpenVPN Cloud user group.
+  Use an cloudconnexa_user_group data source to read an Cloud Connexa user group.
 ---
 
 # cloudconnexa_user_group (Data Source)
 
-Use an `cloudconnexa_user_group` data source to read an OpenVPN Cloud user group.
+Use an `cloudconnexa_user_group` data source to read an Cloud Connexa user group.
 
 
 

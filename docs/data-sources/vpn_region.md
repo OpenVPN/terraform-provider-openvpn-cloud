@@ -3,12 +3,12 @@
 page_title: "cloudconnexa_vpn_region Data Source - terraform-provider-cloudconnexa"
 subcategory: ""
 description: |-
-  Use a cloudconnexa_vpn_region data source to read an OpenVPN Cloud VPN region.
+  Use a cloudconnexa_vpn_region data source to read an Cloud Connexa VPN region.
 ---
 
 # cloudconnexa_vpn_region (Data Source)
 
-Use a `cloudconnexa_vpn_region` data source to read an OpenVPN Cloud VPN region.
+Use a `cloudconnexa_vpn_region` data source to read an Cloud Connexa VPN region.
 
 
 

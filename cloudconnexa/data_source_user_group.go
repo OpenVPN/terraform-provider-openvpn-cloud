@@ -12,7 +12,7 @@ import (
 
 func dataSourceUserGroup() *schema.Resource {
 	return &schema.Resource{
-		Description: "Use an `cloudconnexa_user_group` data source to read an OpenVPN Cloud user group.",
+		Description: "Use an `cloudconnexa_user_group` data source to read an Cloud Connexa user group.",
 		ReadContext: dataSourceUserGroupRead,
 		Schema: map[string]*schema.Schema{
 			"user_group_id": {

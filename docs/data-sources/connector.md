@@ -3,12 +3,12 @@
 page_title: "cloudconnexa_connector Data Source - terraform-provider-cloudconnexa"
 subcategory: ""
 description: |-
-  Use an cloudconnexa_connector data source to read an existing OpenVPN Cloud connector.
+  Use an cloudconnexa_connector data source to read an existing Cloud Connexa connector.
 ---
 
 # cloudconnexa_connector (Data Source)
 
-Use an `cloudconnexa_connector` data source to read an existing OpenVPN Cloud connector.
+Use an `cloudconnexa_connector` data source to read an existing Cloud Connexa connector.
 
 
 

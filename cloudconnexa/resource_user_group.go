@@ -10,7 +10,7 @@ import (
 
 func resourceUserGroup() *schema.Resource {
 	return &schema.Resource{
-		Description:   "Use `cloudconnexa_user_group` to create an OpenVPN Cloud user group.",
+		Description:   "Use `cloudconnexa_user_group` to create an Cloud Connexa user group.",
 		CreateContext: resourceUserGroupCreate,
 		ReadContext:   resourceUserGroupRead,
 		UpdateContext: resourceUserGroupUpdate,

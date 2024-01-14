@@ -3,12 +3,12 @@
 page_title: "cloudconnexa_user Resource - terraform-provider-cloudconnexa"
 subcategory: ""
 description: |-
-  Use cloudconnexa_user to create an OpenVPN Cloud user.
+  Use cloudconnexa_user to create an Cloud Connexa user.
 ---
 
 # cloudconnexa_user (Resource)
 
-Use `cloudconnexa_user` to create an OpenVPN Cloud user.
+Use `cloudconnexa_user` to create an Cloud Connexa user.
 
 
 
@@ -17,14 +17,14 @@ Use `cloudconnexa_user` to create an OpenVPN Cloud user.
 
 ### Required
 
-- `email` (String) An invitation to OpenVPN cloud account will be sent to this email. It will include an initial password and a VPN setup guide.
+- `email` (String) An invitation to Cloud Connexa account will be sent to this email. It will include an initial password and a VPN setup guide.
 - `first_name` (String) User's first name.
 - `last_name` (String) User's last name.
 - `username` (String) A username for the user.
 
 ### Optional
 
-- `devices` (Block List, Max: 1) When a user signs in, the device that they use will be added to their account. You can read more at [OpenVPN Cloud Device](https://openvpn.net/cloud-docs/device/). (see [below for nested schema](#nestedblock--devices))
+- `devices` (Block List, Max: 1) When a user signs in, the device that they use will be added to their account. You can read more at [Cloud Connexa Device](https://openvpn.net/cloud-docs/device/). (see [below for nested schema](#nestedblock--devices))
 - `group_id` (String) The UUID of a user's group.
 
 ### Read-Only

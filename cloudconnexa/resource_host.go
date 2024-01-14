@@ -12,7 +12,7 @@ import (
 
 func resourceHost() *schema.Resource {
 	return &schema.Resource{
-		Description:   "Use `cloudconnexa_host` to create an OpenVPN Cloud host.",
+		Description:   "Use `cloudconnexa_host` to create an Cloud Connexa host.",
 		CreateContext: resourceHostCreate,
 		ReadContext:   resourceHostRead,
 		UpdateContext: resourceHostUpdate,
@@ -135,7 +135,7 @@ func resourceHostCreate(ctx context.Context, d *schema.ResourceData, m interface
 	return append(diags, diag.Diagnostic{
 		Severity: diag.Warning,
 		Summary:  "The connector for this host needs to be set up manually",
-		Detail:   "Terraform only creates the OpenVPN Cloud connector object for this host, but additional manual steps are required to associate a host in your infrastructure with this connector. Go to https://openvpn.net/cloud-docs/connector/ for more information.",
+		Detail:   "Terraform only creates the Cloud Connexa connector object for this host, but additional manual steps are required to associate a host in your infrastructure with this connector. Go to https://openvpn.net/cloud-docs/connector/ for more information.",
 	})
 }
 

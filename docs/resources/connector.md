@@ -3,15 +3,15 @@
 page_title: "cloudconnexa_connector Resource - terraform-provider-cloudconnexa"
 subcategory: ""
 description: |-
-  Use cloudconnexa_connector to create an OpenVPN Cloud connector.
-  ~> NOTE: This only creates the OpenVPN Cloud connector object. Additional manual steps are required to associate a host in your infrastructure with the connector. Go to https://openvpn.net/cloud-docs/connector/ for more information.
+  Use cloudconnexa_connector to create an Cloud Connexa connector.
+  ~> NOTE: This only creates the Cloud Connexa connector object. Additional manual steps are required to associate a host in your infrastructure with the connector. Go to https://openvpn.net/cloud-docs/connector/ for more information.
 ---
 
 # cloudconnexa_connector (Resource)
 
-Use `cloudconnexa_connector` to create an OpenVPN Cloud connector.
+Use `cloudconnexa_connector` to create an Cloud Connexa connector.
 
-~> NOTE: This only creates the OpenVPN Cloud connector object. Additional manual steps are required to associate a host in your infrastructure with the connector. Go to https://openvpn.net/cloud-docs/connector/ for more information.
+~> NOTE: This only creates the Cloud Connexa connector object. Additional manual steps are required to associate a host in your infrastructure with the connector. Go to https://openvpn.net/cloud-docs/connector/ for more information.
 
 
 

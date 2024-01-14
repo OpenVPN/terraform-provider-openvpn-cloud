@@ -12,7 +12,7 @@ import (
 
 func dataSourceUser() *schema.Resource {
 	return &schema.Resource{
-		Description: "Use a `cloudconnexa_user` data source to read a specific OpenVPN Cloud user.",
+		Description: "Use a `cloudconnexa_user` data source to read a specific Cloud Connexa user.",
 		ReadContext: dataSourceUserRead,
 		Schema: map[string]*schema.Schema{
 			"user_id": {

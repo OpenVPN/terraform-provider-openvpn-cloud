@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
+	"github.com/openvpn/cloudconnexa-go-client/v2/cloudconnexa"
 	"testing"
 
 	"github.com/OpenVPN/terraform-provider-openvpn-cloud/client"
@@ -55,8 +56,8 @@ func testAccCheckCloudConnexaServiceExists(rn, networkId string) resource.TestCh
 			return errors.New("no ID is set")
 		}
 
-		c := testAccProvider.Meta().(*client.Client)
-		_, err := c.GetService(rs.Primary.ID, rs.Primary.Attributes["network_item_type"], rs.Primary.Attributes["network_item_id"])
+		c := testAccProvider.Meta().(*cloudconnexa.Client)
+		_, err := c.IPServices.Get(rs.Primary.ID, rs.Primary.Attributes["network_item_type"], rs.Primary.Attributes["network_item_id"])
 		if err != nil {
 			return err
 		}

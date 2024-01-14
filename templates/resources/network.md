@@ -3,12 +3,12 @@
 page_title: "cloudconnexa_network Resource - terraform-provider-cloudconnexa"
 subcategory: ""
 description: |-
-  Use cloudconnexa_network to create an OpenVPN Cloud Network.
+  Use cloudconnexa_network to create an Cloud Connexa Network.
 ---
 
 # cloudconnexa_network (Resource)
 
-Use `cloudconnexa_network` to create an OpenVPN Cloud Network.
+Use `cloudconnexa_network` to create an Cloud Connexa Network.
 
 
 

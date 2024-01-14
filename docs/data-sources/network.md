@@ -3,12 +3,12 @@
 page_title: "cloudconnexa_network Data Source - terraform-provider-cloudconnexa"
 subcategory: ""
 description: |-
-  Use a cloudconnexa_network data source to read an OpenVPN Cloud network.
+  Use a cloudconnexa_network data source to read an Cloud Connexa network.
 ---
 
 # cloudconnexa_network (Data Source)
 
-Use a `cloudconnexa_network` data source to read an OpenVPN Cloud network.
+Use a `cloudconnexa_network` data source to read an Cloud Connexa network.
 
 
 

@@ -12,7 +12,7 @@ import (
 
 func dataSourceNetwork() *schema.Resource {
 	return &schema.Resource{
-		Description: "Use a `cloudconnexa_network` data source to read an OpenVPN Cloud network.",
+		Description: "Use a `cloudconnexa_network` data source to read an Cloud Connexa network.",
 		ReadContext: dataSourceNetworkRead,
 		Schema: map[string]*schema.Schema{
 			"network_id": {

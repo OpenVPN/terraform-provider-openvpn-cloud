@@ -15,7 +15,7 @@ var (
 
 func resourceIPService() *schema.Resource {
 	return &schema.Resource{
-		CreateContext: resourceServiceCreate,
+		CreateContext: resourceIPServiceCreate,
 		ReadContext:   resourceServiceRead,
 		DeleteContext: resourceServiceDelete,
 		UpdateContext: resourceServiceUpdate,
@@ -30,7 +30,7 @@ func resourceIPService() *schema.Resource {
 			},
 			"description": {
 				Type:         schema.TypeString,
-				Default:      "Created by Terraform OpenVPN Cloud Provider",
+				Default:      "Created by Terraform Cloud Connexa Provider",
 				ValidateFunc: validation.StringLenBetween(1, 255),
 				Optional:     true,
 			},
@@ -209,20 +209,26 @@ func flattenRoutes(routes []*client.Route) []string {
 	return data
 }
 
-func resourceServiceCreate(ctx context.Context, data *schema.ResourceData, i interface{}) diag.Diagnostics {
-	c := i.(*cloudconnexa.Client)
-	var diags diag.Diagnostics
+func resourceIPServiceCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	client := m.(*cloudconnexa.Client)
 
-	service, err := c.CreateService(resourceDataToService(data))
-	if err != nil {
-		return append(diags, diag.FromErr(err)...)
+	service := &cloudconnexa.IPService{
+		// Заполните поля структуры IPService данными из d
+		Name:            d.Get("name").(string),
+		Description:     d.Get("description").(string),
+		NetworkItemType: d.Get("network_item_type").(string),
+		NetworkItemId:   d.Get("network_item_id").(string),
+		// ... другие поля ...
 	}
 
-	data.SetId(service.Id)
-	setResourceData(data, service)
-	return diags
-}
+	createdService, err := client.IPServices.Create(service)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
+	d.SetId(createdService.Id)
+	return resourceIPServiceRead(ctx, d, m)
+}
 func resourceDataToService(data *schema.ResourceData) *client.Service {
 	routes := data.Get("routes").([]interface{})
 	var configRoutes []*client.Route

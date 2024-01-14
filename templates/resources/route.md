@@ -3,12 +3,12 @@
 page_title: "cloudconnexa_route Resource - terraform-provider-cloudconnexa"
 subcategory: ""
 description: |-
-  Use cloudconnexa_route to create a route on an OpenVPN Cloud network.
+  Use cloudconnexa_route to create a route on an Cloud Connexa network.
 ---
 
 # cloudconnexa_route (Resource)
 
-Use `cloudconnexa_route` to create a route on an OpenVPN Cloud network.
+Use `cloudconnexa_route` to create a route on an Cloud Connexa network.
 
 
 

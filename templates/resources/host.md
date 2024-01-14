@@ -3,12 +3,12 @@
 page_title: "cloudconnexa_host Resource - terraform-provider-cloudconnexa"
 subcategory: ""
 description: |-
-  Use cloudconnexa_host to create an OpenVPN Cloud host.
+  Use cloudconnexa_host to create an Cloud Connexa host.
 ---
 
 # cloudconnexa_host (Resource)
 
-Use `cloudconnexa_host` to create an OpenVPN Cloud host.
+Use `cloudconnexa_host` to create an Cloud Connexa host.
 
 
 

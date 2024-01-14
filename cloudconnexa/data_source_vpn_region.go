@@ -12,7 +12,7 @@ import (
 
 func dataSourceVpnRegion() *schema.Resource {
 	return &schema.Resource{
-		Description: "Use a `cloudconnexa_vpn_region` data source to read an OpenVPN Cloud VPN region.",
+		Description: "Use a `cloudconnexa_vpn_region` data source to read an Cloud Connexa VPN region.",
 		ReadContext: dataSourceVpnRegionRead,
 		Schema: map[string]*schema.Schema{
 			"region_id": {

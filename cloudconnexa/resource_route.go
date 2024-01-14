@@ -11,7 +11,7 @@ import (
 
 func resourceRoute() *schema.Resource {
 	return &schema.Resource{
-		Description:   "Use `cloudconnexa_route` to create a route on an OpenVPN Cloud network.",
+		Description:   "Use `cloudconnexa_route` to create a route on an Cloud Connexa network.",
 		CreateContext: resourceRouteCreate,
 		UpdateContext: resourceRouteUpdate,
 		ReadContext:   resourceRouteRead,
