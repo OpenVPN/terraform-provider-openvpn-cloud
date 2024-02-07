@@ -7,7 +7,6 @@ import (
 	"github.com/openvpn/cloudconnexa-go-client/v2/cloudconnexa"
 	"testing"
 
-	"github.com/OpenVPN/terraform-provider-openvpn-cloud/client"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 )
@@ -15,13 +14,13 @@ import (
 func TestAccCloudConnexaService_basic(t *testing.T) {
 	rn := "cloudconnexa_service.test"
 	networkName := acctest.RandStringFromCharSet(10, alphabet)
-	service := client.Service{
+	service := cloudconnexa.IPService{
 		Name: acctest.RandStringFromCharSet(10, alphabet),
 	}
 	serviceChanged := service
 	serviceChanged.Name = fmt.Sprintf("changed-%s", acctest.RandStringFromCharSet(10, alphabet))
 
-	check := func(service client.Service) resource.TestCheckFunc {
+	check := func(service cloudconnexa.IPService) resource.TestCheckFunc {
 		return resource.ComposeTestCheckFunc(
 			testAccCheckCloudConnexaServiceExists(rn, networkName),
 			resource.TestCheckResourceAttr(rn, "name", service.Name),
@@ -57,7 +56,7 @@ func testAccCheckCloudConnexaServiceExists(rn, networkId string) resource.TestCh
 		}
 
 		c := testAccProvider.Meta().(*cloudconnexa.Client)
-		_, err := c.IPServices.Get(rs.Primary.ID, rs.Primary.Attributes["network_item_type"], rs.Primary.Attributes["network_item_id"])
+		_, err := c.IPServices.Get(rs.Primary.ID)
 		if err != nil {
 			return err
 		}
@@ -66,21 +65,20 @@ func testAccCheckCloudConnexaServiceExists(rn, networkId string) resource.TestCh
 }
 
 func testAccCheckCloudConnexaServiceDestroy(state *terraform.State) error {
-	c := testAccProvider.Meta().(*client.Client)
+	c := testAccProvider.Meta().(*cloudconnexa.Client)
 	for _, rs := range state.RootModule().Resources {
 		if rs.Type != "cloudconnexa_service" {
 			continue
 		}
 		id := rs.Primary.Attributes["id"]
-		s, err := c.GetService(id, "c63acae0-b569-4116-9b39-921c1dee62d2", "NETWORK")
+		s, err := c.IPServices.Get(id)
 		if err == nil || s != nil {
 			return fmt.Errorf("service still exists")
 		}
 	}
 	return nil
 }
-
-func testAccCloudConnexaServiceConfig(service client.Service, networkName string) string {
+func testAccCloudConnexaServiceConfig(service cloudconnexa.IPService, networkName string) string {
 	return fmt.Sprintf(`
 provider "cloudconnexa" {
 	base_url = "https://%s.api.openvpn.com"
@@ -88,6 +86,7 @@ provider "cloudconnexa" {
 
 resource "cloudconnexa_network" "test" {
 	name = "%s"
+	description = "test"
 
 	default_connector {
 	  name          = "%s"
@@ -99,7 +98,7 @@ resource "cloudconnexa_network" "test" {
 	}
 }
 
-resource "cloudconnexa_service" "test" {
+resource "cloudconnexa_ip_service" "test" {
 	name = "%s"
 	type = "SERVICE_DESTINATION"
 	description = "test"
