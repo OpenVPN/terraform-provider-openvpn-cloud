@@ -10,8 +10,8 @@ import (
 )
 
 const (
-	clientIDEnvVar     = "OPENVPN_CLOUD_CLIENT_ID"
-	clientSecretEnvVar = "OPENVPN_CLOUD_CLIENT_SECRET"
+	ClientIDEnvVar     = "CLOUDCONNEXA_CLIENT_ID"
+	ClientSecretEnvVar = "CLOUDCONNEXA_CLIENT_SECRET"
 )
 
 type Token struct {
@@ -27,7 +27,7 @@ func Provider() *schema.Provider {
 				Type:        schema.TypeString,
 				Optional:    true,
 				Sensitive:   true,
-				DefaultFunc: schema.EnvDefaultFunc(clientIDEnvVar, nil),
+				DefaultFunc: schema.EnvDefaultFunc(ClientIDEnvVar, nil),
 			},
 			"client_secret": {
 				Description: "The authentication client_secret used to connect to Cloud Connexa API. The value can be sourced from " +
@@ -35,7 +35,7 @@ func Provider() *schema.Provider {
 				Type:        schema.TypeString,
 				Optional:    true,
 				Sensitive:   true,
-				DefaultFunc: schema.EnvDefaultFunc(clientSecretEnvVar, nil),
+				DefaultFunc: schema.EnvDefaultFunc(ClientSecretEnvVar, nil),
 			},
 			"base_url": {
 				Description: "The target Cloud Connexa Base API URL in the format `https://[companyName].api.openvpn.com`",

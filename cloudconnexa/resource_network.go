@@ -98,6 +98,12 @@ func resourceNetwork() *schema.Resource {
 							Computed:    true,
 							Description: "The ID of this resource.",
 						},
+						"description": {
+							Type:        schema.TypeString,
+							Optional:    true,
+							Default:     "Managed by Terraform.",
+							Description: "The default connection description.",
+						},
 						"name": {
 							Type:        schema.TypeString,
 							Required:    true,
@@ -143,6 +149,7 @@ func resourceNetworkCreate(ctx context.Context, d *schema.ResourceData, m interf
 		{
 			Name:        configConnector["name"].(string),
 			VpnRegionId: configConnector["vpn_region_id"].(string),
+			Description: configConnector["description"].(string),
 		},
 	}
 	n := cloudconnexa.Network{

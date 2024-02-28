@@ -2,6 +2,7 @@ package e2e
 
 import (
 	"fmt"
+	"github.com/OpenVPN/terraform-provider-openvpn-cloud/cloudconnexa"
 	"github.com/gruntwork-io/terratest/modules/terraform"
 	api "github.com/openvpn/cloudconnexa-go-client/v2/cloudconnexa"
 	"github.com/stretchr/testify/assert"
@@ -12,9 +13,7 @@ import (
 )
 
 const (
-	CloudConnexaHostKey         = "OVPN_HOST"
-	CloudConnexaClientIdKey     = "CLOUDCONNEXA_CLIENT_ID"
-	CloudConnexaClientSecretKey = "CLOUDCONNEXA_CLIENT_SECRET"
+	CloudConnexaHostKey = "OVPN_HOST"
 )
 
 func TestCreationDeletion(t *testing.T) {
@@ -48,8 +47,8 @@ func TestCreationDeletion(t *testing.T) {
 
 	client, err := api.NewClient(
 		os.Getenv(CloudConnexaHostKey),
-		os.Getenv(CloudConnexaClientIdKey),
-		os.Getenv(CloudConnexaClientSecretKey),
+		os.Getenv(cloudconnexa.ClientIDEnvVar),
+		os.Getenv(cloudconnexa.ClientSecretEnvVar),
 	)
 	require.NoError(t, err)
 
@@ -60,9 +59,9 @@ func TestCreationDeletion(t *testing.T) {
 	connectorWasOnline := false
 	for i := 0; i < totalAttempts; i++ {
 		t.Logf("Waiting for connector to be online (%d/%d)", i+1, totalAttempts)
-		connector, err := client.GetConnectorById(connectorID)
+		connector, err := client.Connectors.GetByID(connectorID)
 		require.NoError(t, err, "Invalid connector ID in output")
-		if connector.ConnectionStatus == api.ConnectionStatusOnline {
+		if connector.ConnectionStatus == "online" {
 			connectorWasOnline = true
 			break
 		}
@@ -73,8 +72,8 @@ func TestCreationDeletion(t *testing.T) {
 
 func validateEnvVars(t *testing.T) {
 	validateEnvVar(t, CloudConnexaHostKey)
-	validateEnvVar(t, CloudConnexaClientIdKey)
-	validateEnvVar(t, CloudConnexaClientSecretKey)
+	validateEnvVar(t, cloudconnexa.ClientIDEnvVar)
+	validateEnvVar(t, cloudconnexa.ClientSecretEnvVar)
 }
 
 func validateEnvVar(t *testing.T, envVar string) {
