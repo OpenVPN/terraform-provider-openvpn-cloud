@@ -1,18 +1,18 @@
-package openvpncloud
+package cloudconnexa
 
 import (
 	"context"
+	"github.com/openvpn/cloudconnexa-go-client/v2/cloudconnexa"
 	"strconv"
 	"time"
 
-	"github.com/OpenVPN/terraform-provider-openvpn-cloud/client"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
 func dataSourceUserGroup() *schema.Resource {
 	return &schema.Resource{
-		Description: "Use an `openvpncloud_user_group` data source to read an OpenVPN Cloud user group.",
+		Description: "Use an `cloudconnexa_user_group` data source to read an Cloud Connexa user group.",
 		ReadContext: dataSourceUserGroupRead,
 		Schema: map[string]*schema.Schema{
 			"user_group_id": {
@@ -56,17 +56,17 @@ func dataSourceUserGroup() *schema.Resource {
 }
 
 func dataSourceUserGroupRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	c := m.(*client.Client)
+	c := m.(*cloudconnexa.Client)
 	var diags diag.Diagnostics
 	userGroupName := d.Get("name").(string)
-	userGroup, err := c.GetUserGroupByName(userGroupName)
+	userGroup, err := c.UserGroups.GetByName(userGroupName)
 	if err != nil {
 		return append(diags, diag.FromErr(err)...)
 	}
 	if userGroup == nil {
 		return append(diags, diag.Errorf("User group with name %s was not found", userGroupName)...)
 	}
-	d.Set("user_group_id", userGroup.Id)
+	d.Set("user_group_id", userGroup.ID)
 	d.Set("name", userGroup.Name)
 	d.Set("vpn_region_ids", userGroup.VpnRegionIds)
 	d.Set("internet_access", userGroup.InternetAccess)

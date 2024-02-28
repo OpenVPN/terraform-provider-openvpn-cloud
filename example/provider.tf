@@ -3,5 +3,5 @@ provider "openvpncloud" {
 }
 
 ## Environment Variables example:
-# export OPENVPN_CLOUD_CLIENT_ID=""
-# export OPENVPN_CLOUD_CLIENT_SECRET=""
+# export CLOUDCONNEXA_CLIENT_ID=""
+# export CLOUDCONNEXA_CLIENT_SECRET=""

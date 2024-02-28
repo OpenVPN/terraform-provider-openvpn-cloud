@@ -1,16 +1,16 @@
-package openvpncloud
+package cloudconnexa
 
 import (
 	"context"
-	"github.com/OpenVPN/terraform-provider-openvpn-cloud/client"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
+	"github.com/openvpn/cloudconnexa-go-client/v2/cloudconnexa"
 )
 
 func resourceUserGroup() *schema.Resource {
 	return &schema.Resource{
-		Description:   "Use `openvpncloud_user_group` to create an OpenVPN Cloud user group.",
+		Description:   "Use `cloudconnexa_user_group` to create an Cloud Connexa user group.",
 		CreateContext: resourceUserGroupCreate,
 		ReadContext:   resourceUserGroupRead,
 		UpdateContext: resourceUserGroupUpdate,
@@ -72,11 +72,11 @@ func resourceUserGroup() *schema.Resource {
 }
 
 func resourceUserGroupUpdate(ctx context.Context, data *schema.ResourceData, i interface{}) diag.Diagnostics {
-	c := i.(*client.Client)
+	c := i.(*cloudconnexa.Client)
 	var diags diag.Diagnostics
 	ug := resourceDataToUserGroup(data)
 
-	userGroup, err := c.UpdateUserGroup(data.Id(), ug)
+	userGroup, err := c.UserGroups.Update(data.Id(), ug)
 	if err != nil {
 		return append(diags, diag.FromErr(err)...)
 	}
@@ -90,7 +90,7 @@ func resourceUserGroupUpdate(ctx context.Context, data *schema.ResourceData, i i
 	return diags
 }
 
-func resourceDataToUserGroup(data *schema.ResourceData) *client.UserGroup {
+func resourceDataToUserGroup(data *schema.ResourceData) *cloudconnexa.UserGroup {
 	name := data.Get("name").(string)
 	connectAuth := data.Get("connect_auth").(string)
 	maxDevice := data.Get("max_device").(int)
@@ -106,7 +106,7 @@ func resourceDataToUserGroup(data *schema.ResourceData) *client.UserGroup {
 		vpnRegionIds = append(vpnRegionIds, r.(string))
 	}
 
-	ug := &client.UserGroup{
+	ug := &cloudconnexa.UserGroup{
 		Name:           name,
 		ConnectAuth:    connectAuth,
 		MaxDevice:      maxDevice,
@@ -117,8 +117,8 @@ func resourceDataToUserGroup(data *schema.ResourceData) *client.UserGroup {
 	return ug
 }
 
-func updateUserGroupData(data *schema.ResourceData, userGroup *client.UserGroup) {
-	data.SetId(userGroup.Id)
+func updateUserGroupData(data *schema.ResourceData, userGroup *cloudconnexa.UserGroup) {
+	data.SetId(userGroup.ID)
 	_ = data.Set("connect_auth", userGroup.ConnectAuth)
 	_ = data.Set("max_device", userGroup.MaxDevice)
 	_ = data.Set("name", userGroup.Name)
@@ -128,9 +128,9 @@ func updateUserGroupData(data *schema.ResourceData, userGroup *client.UserGroup)
 }
 
 func resourceUserGroupDelete(ctx context.Context, data *schema.ResourceData, i interface{}) diag.Diagnostics {
-	c := i.(*client.Client)
+	c := i.(*cloudconnexa.Client)
 	var diags diag.Diagnostics
-	err := c.DeleteUserGroup(data.Id())
+	err := c.UserGroups.Delete(data.Id())
 	if err != nil {
 		return append(diags, diag.FromErr(err)...)
 	}
@@ -139,9 +139,9 @@ func resourceUserGroupDelete(ctx context.Context, data *schema.ResourceData, i i
 }
 
 func resourceUserGroupRead(ctx context.Context, data *schema.ResourceData, i interface{}) diag.Diagnostics {
-	c := i.(*client.Client)
+	c := i.(*cloudconnexa.Client)
 	var diags diag.Diagnostics
-	userGroup, err := c.GetUserGroupById(data.Id())
+	userGroup, err := c.UserGroups.Get(data.Id())
 	if err != nil {
 		return append(diags, diag.FromErr(err)...)
 	}
@@ -155,11 +155,11 @@ func resourceUserGroupRead(ctx context.Context, data *schema.ResourceData, i int
 }
 
 func resourceUserGroupCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	c := m.(*client.Client)
+	c := m.(*cloudconnexa.Client)
 	var diags diag.Diagnostics
 	ug := resourceDataToUserGroup(d)
 
-	userGroup, err := c.CreateUserGroup(ug)
+	userGroup, err := c.UserGroups.Create(ug)
 	if err != nil {
 		return append(diags, diag.FromErr(err)...)
 	}

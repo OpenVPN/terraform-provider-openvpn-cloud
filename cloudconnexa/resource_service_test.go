@@ -1,28 +1,28 @@
-package openvpncloud
+package cloudconnexa
 
 import (
 	"errors"
 	"fmt"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
+	"github.com/openvpn/cloudconnexa-go-client/v2/cloudconnexa"
 	"testing"
 
-	"github.com/OpenVPN/terraform-provider-openvpn-cloud/client"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 )
 
-func TestAccOpenvpncloudService_basic(t *testing.T) {
-	rn := "openvpncloud_service.test"
+func TestAccCloudConnexaService_basic(t *testing.T) {
+	rn := "cloudconnexa_service.test"
 	networkName := acctest.RandStringFromCharSet(10, alphabet)
-	service := client.Service{
+	service := cloudconnexa.IPService{
 		Name: acctest.RandStringFromCharSet(10, alphabet),
 	}
 	serviceChanged := service
 	serviceChanged.Name = fmt.Sprintf("changed-%s", acctest.RandStringFromCharSet(10, alphabet))
 
-	check := func(service client.Service) resource.TestCheckFunc {
+	check := func(service cloudconnexa.IPService) resource.TestCheckFunc {
 		return resource.ComposeTestCheckFunc(
-			testAccCheckOpenvpncloudServiceExists(rn, networkName),
+			testAccCheckCloudConnexaServiceExists(rn, networkName),
 			resource.TestCheckResourceAttr(rn, "name", service.Name),
 		)
 	}
@@ -30,21 +30,21 @@ func TestAccOpenvpncloudService_basic(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck:          func() { testAccPreCheck(t) },
 		ProviderFactories: testAccProviderFactories,
-		CheckDestroy:      testAccCheckOpenvpncloudServiceDestroy,
+		CheckDestroy:      testAccCheckCloudConnexaServiceDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccOpenvpncloudServiceConfig(service, networkName),
+				Config: testAccCloudConnexaServiceConfig(service, networkName),
 				Check:  check(service),
 			},
 			{
-				Config: testAccOpenvpncloudServiceConfig(serviceChanged, networkName),
+				Config: testAccCloudConnexaServiceConfig(serviceChanged, networkName),
 				Check:  check(serviceChanged),
 			},
 		},
 	})
 }
 
-func testAccCheckOpenvpncloudServiceExists(rn, networkId string) resource.TestCheckFunc {
+func testAccCheckCloudConnexaServiceExists(rn, networkId string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[rn]
 		if !ok {
@@ -55,8 +55,8 @@ func testAccCheckOpenvpncloudServiceExists(rn, networkId string) resource.TestCh
 			return errors.New("no ID is set")
 		}
 
-		c := testAccProvider.Meta().(*client.Client)
-		_, err := c.GetService(rs.Primary.ID, rs.Primary.Attributes["network_item_type"], rs.Primary.Attributes["network_item_id"])
+		c := testAccProvider.Meta().(*cloudconnexa.Client)
+		_, err := c.IPServices.Get(rs.Primary.ID)
 		if err != nil {
 			return err
 		}
@@ -64,29 +64,29 @@ func testAccCheckOpenvpncloudServiceExists(rn, networkId string) resource.TestCh
 	}
 }
 
-func testAccCheckOpenvpncloudServiceDestroy(state *terraform.State) error {
-	c := testAccProvider.Meta().(*client.Client)
+func testAccCheckCloudConnexaServiceDestroy(state *terraform.State) error {
+	c := testAccProvider.Meta().(*cloudconnexa.Client)
 	for _, rs := range state.RootModule().Resources {
-		if rs.Type != "openvpncloud_service" {
+		if rs.Type != "cloudconnexa_service" {
 			continue
 		}
 		id := rs.Primary.Attributes["id"]
-		s, err := c.GetService(id, "c63acae0-b569-4116-9b39-921c1dee62d2", "NETWORK")
+		s, err := c.IPServices.Get(id)
 		if err == nil || s != nil {
 			return fmt.Errorf("service still exists")
 		}
 	}
 	return nil
 }
-
-func testAccOpenvpncloudServiceConfig(service client.Service, networkName string) string {
+func testAccCloudConnexaServiceConfig(service cloudconnexa.IPService, networkName string) string {
 	return fmt.Sprintf(`
-provider "openvpncloud" {
+provider "cloudconnexa" {
 	base_url = "https://%s.api.openvpn.com"
 }
 
-resource "openvpncloud_network" "test" {
+resource "cloudconnexa_network" "test" {
 	name = "%s"
+	description = "test"
 
 	default_connector {
 	  name          = "%s"
@@ -98,12 +98,12 @@ resource "openvpncloud_network" "test" {
 	}
 }
 
-resource "openvpncloud_service" "test" {
+resource "cloudconnexa_ip_service" "test" {
 	name = "%s"
 	type = "SERVICE_DESTINATION"
 	description = "test"
 	network_item_type = "NETWORK"
-	network_item_id = openvpncloud_network.test.id
+	network_item_id = cloudconnexa_network.test.id
 	routes = ["test.ua" ]
 	config {
 		service_types = ["ANY"]

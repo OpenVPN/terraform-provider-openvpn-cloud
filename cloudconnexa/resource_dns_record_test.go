@@ -1,24 +1,24 @@
-package openvpncloud
+package cloudconnexa
 
 import (
 	"fmt"
+	"github.com/openvpn/cloudconnexa-go-client/v2/cloudconnexa"
 	"testing"
 
-	"github.com/OpenVPN/terraform-provider-openvpn-cloud/client"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 )
 
-func TestAccOpenvpncloudDnsRecord_basic(t *testing.T) {
-	resourceName := "openvpncloud_dns_record.test"
-	domainName := "test.openvpncloud.com"
+func TestAccCloudConnexaDnsRecord_basic(t *testing.T) {
+	resourceName := "cloudconnexa_dns_record.test"
+	domainName := "test.cloudconnexa.com"
 	resource.Test(t, resource.TestCase{
 		PreCheck:          func() { testAccPreCheck(t) },
 		ProviderFactories: testAccProviderFactories,
-		CheckDestroy:      testAccCheckOpenvpncloudDnsRecordDestroy,
+		CheckDestroy:      testAccCheckCloudConnexaDnsRecordDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccOpenvpncloudDnsRecordConfig(domainName),
+				Config: testAccCloudConnexaDnsRecordConfig(domainName),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(resourceName, "domain", domainName),
 					resource.TestCheckResourceAttr(resourceName, "description", "test description"),
@@ -32,16 +32,16 @@ func TestAccOpenvpncloudDnsRecord_basic(t *testing.T) {
 	})
 }
 
-func testAccCheckOpenvpncloudDnsRecordDestroy(s *terraform.State) error {
-	client := testAccProvider.Meta().(*client.Client)
+func testAccCheckCloudConnexaDnsRecordDestroy(s *terraform.State) error {
+	client := testAccProvider.Meta().(*cloudconnexa.Client)
 
 	for _, rs := range s.RootModule().Resources {
-		if rs.Type != "openvpncloud_dns_record" {
+		if rs.Type != "cloudconnexa_dns_record" {
 			continue
 		}
 
 		recordId := rs.Primary.ID
-		r, err := client.GetDnsRecord(recordId)
+		r, err := client.DnsRecords.GetDnsRecord(recordId)
 
 		if err != nil {
 			return err
@@ -55,13 +55,13 @@ func testAccCheckOpenvpncloudDnsRecordDestroy(s *terraform.State) error {
 	return nil
 }
 
-func testAccOpenvpncloudDnsRecordConfig(domainName string) string {
+func testAccCloudConnexaDnsRecordConfig(domainName string) string {
 	return fmt.Sprintf(`
-provider "openvpncloud" {
+provider "cloudconnexa" {
   base_url = "https://%[1]s.api.openvpn.com"
 }
 
-resource "openvpncloud_dns_record" "test" {
+resource "cloudconnexa_dns_record" "test" {
   domain          = "%[2]s"
   description     = "test description"
   ip_v4_addresses = ["192.168.1.1", "192.168.1.2"]

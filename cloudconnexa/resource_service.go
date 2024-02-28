@@ -1,21 +1,21 @@
-package openvpncloud
+package cloudconnexa
 
 import (
 	"context"
-	"github.com/OpenVPN/terraform-provider-openvpn-cloud/client"
 	"github.com/hashicorp/go-cty/cty"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
+	"github.com/openvpn/cloudconnexa-go-client/v2/cloudconnexa"
 )
 
 var (
 	validValues = []string{"ANY", "BGP", "CUSTOM", "DHCP", "DNS", "FTP", "HTTP", "HTTPS", "IMAP", "IMAPS", "NTP", "POP3", "POP3S", "SMTP", "SMTPS", "SNMP", "SSH", "TELNET", "TFTP"}
 )
 
-func resourceService() *schema.Resource {
+func resourceIPService() *schema.Resource {
 	return &schema.Resource{
-		CreateContext: resourceServiceCreate,
+		CreateContext: resourceIPServiceCreate,
 		ReadContext:   resourceServiceRead,
 		DeleteContext: resourceServiceDelete,
 		UpdateContext: resourceServiceUpdate,
@@ -30,7 +30,7 @@ func resourceService() *schema.Resource {
 			},
 			"description": {
 				Type:         schema.TypeString,
-				Default:      "Created by Terraform OpenVPN Cloud Provider",
+				Default:      "Created by Terraform Cloud Connexa Provider",
 				ValidateFunc: validation.StringLenBetween(1, 255),
 				Optional:     true,
 			},
@@ -67,11 +67,9 @@ func resourceService() *schema.Resource {
 }
 
 func resourceServiceUpdate(ctx context.Context, data *schema.ResourceData, i interface{}) diag.Diagnostics {
-	c := i.(*client.Client)
-	networkItemId := data.Get("network_item_id").(string)
-	networkItemType := data.Get("network_item_type").(string)
+	c := i.(*cloudconnexa.Client)
 
-	s, err := c.UpdateService(data.Id(), networkItemType, networkItemId, resourceDataToService(data))
+	s, err := c.IPServices.Update(data.Id(), resourceDataToService(data))
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -129,21 +127,22 @@ func resourceServiceConfig() *schema.Resource {
 }
 
 func resourceServiceRead(ctx context.Context, data *schema.ResourceData, i interface{}) diag.Diagnostics {
-	c := i.(*client.Client)
-	service, err := c.GetService(
-		data.Id(),
-		data.Get("network_item_type").(string),
-		data.Get("network_item_id").(string),
-	)
-
+	c := i.(*cloudconnexa.Client)
+	var diags diag.Diagnostics
+	service, err := c.IPServices.Get(data.Id())
 	if err != nil {
-		return diag.FromErr(err)
+		return append(diags, diag.FromErr(err)...)
 	}
+	if service == nil {
+		data.SetId("")
+		return diags
+	}
+
 	setResourceData(data, service)
-	return nil
+	return diags
 }
 
-func setResourceData(data *schema.ResourceData, service *client.Service) {
+func setResourceData(data *schema.ResourceData, service *cloudconnexa.IPService) {
 	data.SetId(service.Id)
 	_ = data.Set("name", service.Name)
 	_ = data.Set("description", service.Description)
@@ -155,19 +154,16 @@ func setResourceData(data *schema.ResourceData, service *client.Service) {
 }
 
 func resourceServiceDelete(ctx context.Context, data *schema.ResourceData, i interface{}) diag.Diagnostics {
-	c := i.(*client.Client)
-	err := c.DeleteService(
-		data.Id(),
-		data.Get("network_item_type").(string),
-		data.Get("network_item_id").(string),
-	)
+	c := i.(*cloudconnexa.Client)
+	var diags diag.Diagnostics
+	err := c.IPServices.Delete(data.Id())
 	if err != nil {
-		return diag.FromErr(err)
+		return append(diags, diag.FromErr(err)...)
 	}
-	return nil
+	return diags
 }
 
-func flattenServiceConfig(config *client.ServiceConfig) interface{} {
+func flattenServiceConfig(config *cloudconnexa.IPServiceConfig) interface{} {
 	var data = map[string]interface{}{
 		"custom_service_types": flattenCustomServiceTypes(config.CustomServiceTypes),
 		"service_types":        config.ServiceTypes,
@@ -175,7 +171,7 @@ func flattenServiceConfig(config *client.ServiceConfig) interface{} {
 	return []interface{}{data}
 }
 
-func flattenCustomServiceTypes(types []*client.CustomServiceType) interface{} {
+func flattenCustomServiceTypes(types []*cloudconnexa.CustomIPServiceType) interface{} {
 	var data []interface{}
 	for _, t := range types {
 		data = append(
@@ -188,7 +184,7 @@ func flattenCustomServiceTypes(types []*client.CustomServiceType) interface{} {
 	return data
 }
 
-func flattenIcmpType(icmpType []client.Range) interface{} {
+func flattenIcmpType(icmpType []cloudconnexa.Range) interface{} {
 	var data []interface{}
 	for _, t := range icmpType {
 		data = append(
@@ -202,59 +198,57 @@ func flattenIcmpType(icmpType []client.Range) interface{} {
 	return data
 }
 
-func flattenRoutes(routes []*client.Route) []string {
+func flattenRoutes(routes []*cloudconnexa.IPServiceRoute) []string {
 	var data []string
 	for _, route := range routes {
 		data = append(
 			data,
-			route.Domain,
+			route.Value,
 		)
 	}
 	return data
 }
 
-func resourceServiceCreate(ctx context.Context, data *schema.ResourceData, i interface{}) diag.Diagnostics {
-	c := i.(*client.Client)
-	var diags diag.Diagnostics
+func resourceIPServiceCreate(ctx context.Context, data *schema.ResourceData, m interface{}) diag.Diagnostics {
+	client := m.(*cloudconnexa.Client)
 
-	service, err := c.CreateService(resourceDataToService(data))
+	service := resourceDataToService(data)
+	createdService, err := client.IPServices.Create(service)
 	if err != nil {
-		return append(diags, diag.FromErr(err)...)
+		return diag.FromErr(err)
 	}
 
-	data.SetId(service.Id)
-	setResourceData(data, service)
-	return diags
+	setResourceData(data, createdService)
+	return nil
 }
-
-func resourceDataToService(data *schema.ResourceData) *client.Service {
+func resourceDataToService(data *schema.ResourceData) *cloudconnexa.IPService {
 	routes := data.Get("routes").([]interface{})
-	var configRoutes []*client.Route
+	var configRoutes []*cloudconnexa.IPServiceRoute
 	for _, r := range routes {
 		configRoutes = append(
 			configRoutes,
-			&client.Route{
+			&cloudconnexa.IPServiceRoute{
 				Value: r.(string),
 			},
 		)
 	}
 
-	config := client.ServiceConfig{}
+	config := cloudconnexa.IPServiceConfig{}
 	configList := data.Get("config").([]interface{})
 	if len(configList) > 0 && configList[0] != nil {
 
-		config.CustomServiceTypes = []*client.CustomServiceType{}
+		config.CustomServiceTypes = []*cloudconnexa.CustomIPServiceType{}
 		config.ServiceTypes = []string{}
 
 		mainConfig := configList[0].(map[string]interface{})
 		for _, r := range mainConfig["custom_service_types"].([]interface{}) {
 			cst := r.(map[string]interface{})
-			var icmpTypes []client.Range
+			var icmpTypes []cloudconnexa.Range
 			for _, r := range cst["icmp_type"].([]interface{}) {
 				icmpType := r.(map[string]interface{})
 				icmpTypes = append(
 					icmpTypes,
-					client.Range{
+					cloudconnexa.Range{
 						LowerValue: icmpType["lower_value"].(int),
 						UpperValue: icmpType["upper_value"].(int),
 					},
@@ -262,7 +256,7 @@ func resourceDataToService(data *schema.ResourceData) *client.Service {
 			}
 			config.CustomServiceTypes = append(
 				config.CustomServiceTypes,
-				&client.CustomServiceType{
+				&cloudconnexa.CustomIPServiceType{
 					IcmpType: icmpTypes,
 				},
 			)
@@ -273,7 +267,7 @@ func resourceDataToService(data *schema.ResourceData) *client.Service {
 		}
 	}
 
-	s := &client.Service{
+	s := &cloudconnexa.IPService{
 		Name:            data.Get("name").(string),
 		Description:     data.Get("description").(string),
 		NetworkItemId:   data.Get("network_item_id").(string),

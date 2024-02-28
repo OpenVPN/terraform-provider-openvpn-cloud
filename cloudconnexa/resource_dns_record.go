@@ -1,9 +1,9 @@
-package openvpncloud
+package cloudconnexa
 
 import (
 	"context"
+	"github.com/openvpn/cloudconnexa-go-client/v2/cloudconnexa"
 
-	"github.com/OpenVPN/terraform-provider-openvpn-cloud/client"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
@@ -11,7 +11,7 @@ import (
 
 func resourceDnsRecord() *schema.Resource {
 	return &schema.Resource{
-		Description:   "Use `openvpncloud_dns_record` to create a DNS record on your VPN.",
+		Description:   "Use `cloudconnexa_dns_record` to create a DNS record on your VPN.",
 		CreateContext: resourceDnsRecordCreate,
 		ReadContext:   resourceDnsRecordRead,
 		DeleteContext: resourceDnsRecordDelete,
@@ -56,7 +56,7 @@ func resourceDnsRecord() *schema.Resource {
 }
 
 func resourceDnsRecordCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	c := m.(*client.Client)
+	c := m.(*cloudconnexa.Client)
 	var diags diag.Diagnostics
 	domain := d.Get("domain").(string)
 	description := d.Get("description").(string)
@@ -70,13 +70,13 @@ func resourceDnsRecordCreate(ctx context.Context, d *schema.ResourceData, m inte
 	for _, a := range ipV6Addresses {
 		ipV6AddressesSlice = append(ipV6AddressesSlice, a.(string))
 	}
-	dr := client.DnsRecord{
+	dr := cloudconnexa.DnsRecord{
 		Domain:        domain,
 		Description:   description,
 		IPV4Addresses: ipV4AddressesSlice,
 		IPV6Addresses: ipV6AddressesSlice,
 	}
-	dnsRecord, err := c.CreateDnsRecord(dr)
+	dnsRecord, err := c.DnsRecords.Create(dr)
 	if err != nil {
 		return append(diags, diag.FromErr(err)...)
 	}
@@ -85,10 +85,10 @@ func resourceDnsRecordCreate(ctx context.Context, d *schema.ResourceData, m inte
 }
 
 func resourceDnsRecordRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	c := m.(*client.Client)
+	c := m.(*cloudconnexa.Client)
 	var diags diag.Diagnostics
 	recordId := d.Id()
-	r, err := c.GetDnsRecord(recordId)
+	r, err := c.DnsRecords.GetDnsRecord(recordId)
 	if err != nil {
 		return append(diags, diag.FromErr(err)...)
 	}
@@ -104,7 +104,7 @@ func resourceDnsRecordRead(ctx context.Context, d *schema.ResourceData, m interf
 }
 
 func resourceDnsRecordUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	c := m.(*client.Client)
+	c := m.(*cloudconnexa.Client)
 	var diags diag.Diagnostics
 	_, domain := d.GetChange("domain")
 	_, description := d.GetChange("description")
@@ -112,14 +112,14 @@ func resourceDnsRecordUpdate(ctx context.Context, d *schema.ResourceData, m inte
 	ipV4AddressesSlice := getAddressesSlice(ipV4Addresses.([]interface{}))
 	_, ipV6Addresses := d.GetChange("ip_v6_addresses")
 	ipV6AddressesSlice := getAddressesSlice(ipV6Addresses.([]interface{}))
-	dr := client.DnsRecord{
+	dr := cloudconnexa.DnsRecord{
 		Id:            d.Id(),
 		Domain:        domain.(string),
 		Description:   description.(string),
 		IPV4Addresses: ipV4AddressesSlice,
 		IPV6Addresses: ipV6AddressesSlice,
 	}
-	err := c.UpdateDnsRecord(dr)
+	err := c.DnsRecords.Update(dr)
 	if err != nil {
 		return append(diags, diag.FromErr(err)...)
 	}
@@ -127,10 +127,10 @@ func resourceDnsRecordUpdate(ctx context.Context, d *schema.ResourceData, m inte
 }
 
 func resourceDnsRecordDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	c := m.(*client.Client)
+	c := m.(*cloudconnexa.Client)
 	var diags diag.Diagnostics
 	routeId := d.Id()
-	err := c.DeleteDnsRecord(routeId)
+	err := c.DnsRecords.Delete(routeId)
 	if err != nil {
 		return append(diags, diag.FromErr(err)...)
 	}

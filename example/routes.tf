@@ -1,6 +1,6 @@
-resource "openvpncloud_route" "example-routes" {
+resource "cloudconnexa_route" "this" {
   for_each = {
-    for key, route in var.example-terraform_ipv4_routes : route.value => route
+    for key, route in var.routes : route.value => route
   }
   network_item_id = var.networks["example-network"]
   type            = "IP_V4"
