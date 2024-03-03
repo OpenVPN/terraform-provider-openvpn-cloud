@@ -1,9 +1,9 @@
-package openvpncloud
+package cloudconnexa
 
 import (
 	"context"
+	"github.com/openvpn/cloudconnexa-go-client/v2/cloudconnexa"
 
-	"github.com/OpenVPN/terraform-provider-openvpn-cloud/client"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
@@ -11,7 +11,7 @@ import (
 
 func resourceRoute() *schema.Resource {
 	return &schema.Resource{
-		Description:   "Use `openvpncloud_route` to create a route on an OpenVPN Cloud network.",
+		Description:   "Use `cloudconnexa_route` to create a route on an Cloud Connexa network.",
 		CreateContext: resourceRouteCreate,
 		UpdateContext: resourceRouteUpdate,
 		ReadContext:   resourceRouteRead,
@@ -24,7 +24,7 @@ func resourceRoute() *schema.Resource {
 				Type:         schema.TypeString,
 				Required:     true,
 				ForceNew:     true,
-				ValidateFunc: validation.StringInSlice([]string{client.RouteTypeIPV4, client.RouteTypeIPV6, client.RouteTypeDomain}, false),
+				ValidateFunc: validation.StringInSlice([]string{"IP_V4", "IP_V6"}, false),
 				Description:  "The type of route. Valid values are `IP_V4`, `IP_V6`, and `DOMAIN`.",
 			},
 			"value": {
@@ -49,35 +49,33 @@ func resourceRoute() *schema.Resource {
 }
 
 func resourceRouteCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	c := m.(*client.Client)
+	c := m.(*cloudconnexa.Client)
 	var diags diag.Diagnostics
 	networkItemId := d.Get("network_item_id").(string)
 	routeType := d.Get("type").(string)
-	routeValue := d.Get("value").(string)
+	routeSubnet := d.Get("subnet").(string)
 	descriptionValue := d.Get("description").(string)
-	r := client.Route{
+	r := cloudconnexa.Route{
 		Type:        routeType,
-		Value:       routeValue,
+		Subnet:      routeSubnet,
 		Description: descriptionValue,
 	}
-	route, err := c.CreateRoute(networkItemId, r)
+	route, err := c.Routes.Create(networkItemId, r)
 	if err != nil {
 		return append(diags, diag.FromErr(err)...)
 	}
 	d.SetId(route.Id)
-	if routeType == client.RouteTypeIPV4 || routeType == client.RouteTypeIPV6 {
+	if routeType == "IP_V4" || routeType == "IP_V6" {
 		d.Set("value", route.Subnet)
-	} else if routeType == client.RouteTypeDomain {
-		d.Set("value", route.Domain)
 	}
 	return diags
 }
 
 func resourceRouteRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	c := m.(*client.Client)
+	c := m.(*cloudconnexa.Client)
 	var diags diag.Diagnostics
 	routeId := d.Id()
-	r, err := c.GetRouteById(routeId)
+	r, err := c.Routes.Get(routeId)
 	if err != nil {
 		return append(diags, diag.FromErr(err)...)
 	}
@@ -85,10 +83,8 @@ func resourceRouteRead(ctx context.Context, d *schema.ResourceData, m interface{
 		d.SetId("")
 	} else {
 		d.Set("type", r.Type)
-		if r.Type == client.RouteTypeIPV4 || r.Type == client.RouteTypeIPV6 {
+		if r.Type == "IP_V4" || r.Type == "IP_V6" {
 			d.Set("value", r.Subnet)
-		} else if r.Type == client.RouteTypeDomain {
-			d.Set("resourceRouteRead", r.Domain)
 		}
 		d.Set("description", r.Description)
 		d.Set("network_item_id", r.NetworkItemId)
@@ -97,7 +93,7 @@ func resourceRouteRead(ctx context.Context, d *schema.ResourceData, m interface{
 }
 
 func resourceRouteUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	c := m.(*client.Client)
+	c := m.(*cloudconnexa.Client)
 	var diags diag.Diagnostics
 	if !d.HasChanges("description", "value") {
 		return diags
@@ -105,14 +101,14 @@ func resourceRouteUpdate(ctx context.Context, d *schema.ResourceData, m interfac
 
 	networkItemId := d.Get("network_item_id").(string)
 	_, description := d.GetChange("description")
-	_, value := d.GetChange("value")
-	r := client.Route{
+	_, subnet := d.GetChange("subnet")
+	r := cloudconnexa.Route{
 		Id:          d.Id(),
 		Description: description.(string),
-		Value:       value.(string),
+		Subnet:      subnet.(string),
 	}
 
-	err := c.UpdateRoute(networkItemId, r)
+	err := c.Routes.Update(networkItemId, r)
 	if err != nil {
 		return append(diags, diag.FromErr(err)...)
 	}
@@ -120,11 +116,11 @@ func resourceRouteUpdate(ctx context.Context, d *schema.ResourceData, m interfac
 }
 
 func resourceRouteDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	c := m.(*client.Client)
+	c := m.(*cloudconnexa.Client)
 	var diags diag.Diagnostics
 	routeId := d.Id()
 	networkItemId := d.Get("network_item_id").(string)
-	err := c.DeleteRoute(networkItemId, routeId)
+	err := c.Routes.Delete(networkItemId, routeId)
 	if err != nil {
 		return append(diags, diag.FromErr(err)...)
 	}

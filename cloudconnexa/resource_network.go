@@ -1,9 +1,9 @@
-package openvpncloud
+package cloudconnexa
 
 import (
 	"context"
+	"github.com/openvpn/cloudconnexa-go-client/v2/cloudconnexa"
 
-	"github.com/OpenVPN/terraform-provider-openvpn-cloud/client"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
@@ -11,7 +11,7 @@ import (
 
 func resourceNetwork() *schema.Resource {
 	return &schema.Resource{
-		Description:   "Use `openvpncloud_network` to create an OpenVPN Cloud Network.",
+		Description:   "Use `cloudconnexa_network` to create an Cloud Connexa Network.",
 		CreateContext: resourceNetworkCreate,
 		ReadContext:   resourceNetworkRead,
 		UpdateContext: resourceNetworkUpdate,
@@ -41,8 +41,8 @@ func resourceNetwork() *schema.Resource {
 			"internet_access": {
 				Type:         schema.TypeString,
 				Optional:     true,
-				Default:      client.InternetAccessLocal,
-				ValidateFunc: validation.StringInSlice([]string{client.InternetAccessBlocked, client.InternetAccessGlobalInternet, client.InternetAccessLocal}, false),
+				Default:      "LOCAL",
+				ValidateFunc: validation.StringInSlice([]string{"BLOCKED", "GLOBAL_INTERNET", "LOCAL"}, false),
 				Description:  "The type of internet access provided. Valid values are `BLOCKED`, `GLOBAL_INTERNET`, or `LOCAL`. Defaults to `LOCAL`.",
 			},
 			"system_subnets": {
@@ -63,8 +63,8 @@ func resourceNetwork() *schema.Resource {
 						"type": {
 							Type:         schema.TypeString,
 							Optional:     true,
-							Default:      client.RouteTypeIPV4,
-							ValidateFunc: validation.StringInSlice([]string{client.RouteTypeIPV4, client.RouteTypeIPV6, client.RouteTypeDomain}, false),
+							Default:      "IP_V4",
+							ValidateFunc: validation.StringInSlice([]string{"IP_V4", "IP_V6"}, false),
 							Description:  "The type of route. Valid values are `IP_V4`, `IP_V6`, and `DOMAIN`.",
 						},
 						"description": {
@@ -97,6 +97,12 @@ func resourceNetwork() *schema.Resource {
 							Type:        schema.TypeString,
 							Computed:    true,
 							Description: "The ID of this resource.",
+						},
+						"description": {
+							Type:        schema.TypeString,
+							Optional:    true,
+							Default:     "Managed by Terraform.",
+							Description: "The default connection description.",
 						},
 						"name": {
 							Type:        schema.TypeString,
@@ -136,32 +142,33 @@ func resourceNetwork() *schema.Resource {
 }
 
 func resourceNetworkCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	c := m.(*client.Client)
+	c := m.(*cloudconnexa.Client)
 	var diags diag.Diagnostics
 	configConnector := d.Get("default_connector").([]interface{})[0].(map[string]interface{})
-	connectors := []client.Connector{
+	connectors := []cloudconnexa.NetworkConnector{
 		{
 			Name:        configConnector["name"].(string),
 			VpnRegionId: configConnector["vpn_region_id"].(string),
+			Description: configConnector["description"].(string),
 		},
 	}
-	n := client.Network{
+	n := cloudconnexa.Network{
 		Name:           d.Get("name").(string),
 		Description:    d.Get("description").(string),
 		Egress:         d.Get("egress").(bool),
 		InternetAccess: d.Get("internet_access").(string),
 		Connectors:     connectors,
 	}
-	network, err := c.CreateNetwork(n)
+	network, err := c.Networks.Create(n)
 	if err != nil {
 		return append(diags, diag.FromErr(err)...)
 	}
 	d.SetId(network.Id)
 	configRoute := d.Get("default_route").([]interface{})[0].(map[string]interface{})
-	defaultRoute, err := c.CreateRoute(network.Id, client.Route{
+	defaultRoute, err := c.Routes.Create(network.Id, cloudconnexa.Route{
 		Type:        configRoute["type"].(string),
 		Description: configRoute["description"].(string),
-		Value:       configRoute["value"].(string),
+		Subnet:      configRoute["subnet"].(string),
 	})
 	if err != nil {
 		return append(diags, diag.FromErr(err)...)
@@ -171,20 +178,20 @@ func resourceNetworkCreate(ctx context.Context, d *schema.ResourceData, m interf
 		"id":          defaultRoute.Id,
 		"description": defaultRoute.Description,
 		"type":        defaultRoute.Type,
-		"value":       defaultRoute.Value,
+		"subnet":      defaultRoute.Subnet,
 	}
 	d.Set("default_route", defaultRouteWithIdSlice)
 	return append(diags, diag.Diagnostic{
 		Severity: diag.Warning,
 		Summary:  "The default connector for this network needs to be set up manually",
-		Detail:   "Terraform only creates the OpenVPN Cloud default connector object for this network, but additional manual steps are required to associate a host in your infrastructure with this connector. Go to https://openvpn.net/cloud-docs/connector/ for more information.",
+		Detail:   "Terraform only creates the Cloud Connexa default connector object for this network, but additional manual steps are required to associate a host in your infrastructure with this connector. Go to https://openvpn.net/cloud-docs/connector/ for more information.",
 	})
 }
 
 func resourceNetworkRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	c := m.(*client.Client)
+	c := m.(*cloudconnexa.Client)
 	var diags diag.Diagnostics
-	network, err := c.GetNetworkById(d.Id())
+	network, err := c.Networks.Get(d.Id())
 	if err != nil {
 		return append(diags, diag.FromErr(err)...)
 	}
@@ -200,7 +207,7 @@ func resourceNetworkRead(ctx context.Context, d *schema.ResourceData, m interfac
 	if len(d.Get("default_connector").([]interface{})) > 0 {
 		configConnector := d.Get("default_connector").([]interface{})[0].(map[string]interface{})
 		connectorName := configConnector["name"].(string)
-		networkConnectors, err := c.GetConnectorsForNetwork(network.Id)
+		networkConnectors, err := c.Connectors.GetByNetworkID(network.Id)
 		if err != nil {
 			return append(diags, diag.FromErr(err)...)
 		}
@@ -211,7 +218,7 @@ func resourceNetworkRead(ctx context.Context, d *schema.ResourceData, m interfac
 	}
 	if len(d.Get("default_route").([]interface{})) > 0 {
 		configRoute := d.Get("default_route").([]interface{})[0].(map[string]interface{})
-		route, err := c.GetNetworkRoute(d.Id(), configRoute["id"].(string))
+		route, err := c.Routes.GetNetworkRoute(d.Id(), configRoute["id"].(string))
 		if err != nil {
 			return append(diags, diag.FromErr(err)...)
 		}
@@ -225,10 +232,8 @@ func resourceNetworkRead(ctx context.Context, d *schema.ResourceData, m interfac
 					"description": route.Description,
 				},
 			}
-			if route.Type == client.RouteTypeIPV4 || route.Type == client.RouteTypeIPV6 {
+			if route.Type == "IP_V4" || route.Type == "IP_V6" {
 				defaultRoute[0]["value"] = route.Subnet
-			} else if route.Type == client.RouteTypeDomain {
-				defaultRoute[0]["value"] = route.Domain
 			}
 			d.Set("default_route", defaultRoute)
 		}
@@ -237,7 +242,7 @@ func resourceNetworkRead(ctx context.Context, d *schema.ResourceData, m interfac
 }
 
 func resourceNetworkUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	c := m.(*client.Client)
+	c := m.(*cloudconnexa.Client)
 	var diags diag.Diagnostics
 	if d.HasChange("default_connector") {
 		old, new := d.GetChange("default_connector")
@@ -245,12 +250,12 @@ func resourceNetworkUpdate(ctx context.Context, d *schema.ResourceData, m interf
 		newSlice := new.([]interface{})
 		if len(oldSlice) == 0 && len(newSlice) == 1 {
 			// This happens when importing the resource
-			newConnector := client.Connector{
+			newConnector := cloudconnexa.Connector{
 				Name:            newSlice[0].(map[string]interface{})["name"].(string),
 				VpnRegionId:     newSlice[0].(map[string]interface{})["vpn_region_id"].(string),
-				NetworkItemType: client.NetworkItemTypeNetwork,
+				NetworkItemType: "NETWORK",
 			}
-			_, err := c.AddConnector(newConnector, d.Id())
+			_, err := c.Connectors.Create(newConnector, d.Id())
 			if err != nil {
 				return append(diags, diag.FromErr(err)...)
 			}
@@ -258,18 +263,18 @@ func resourceNetworkUpdate(ctx context.Context, d *schema.ResourceData, m interf
 			oldMap := oldSlice[0].(map[string]interface{})
 			newMap := newSlice[0].(map[string]interface{})
 			if oldMap["name"].(string) != newMap["name"].(string) || oldMap["vpn_region_id"].(string) != newMap["vpn_region_id"].(string) {
-				newConnector := client.Connector{
+				newConnector := cloudconnexa.Connector{
 					Name:            newMap["name"].(string),
 					VpnRegionId:     newMap["vpn_region_id"].(string),
-					NetworkItemType: client.NetworkItemTypeNetwork,
+					NetworkItemType: "NETWORK",
 				}
-				_, err := c.AddConnector(newConnector, d.Id())
+				_, err := c.Connectors.Create(newConnector, d.Id())
 				if err != nil {
 					return append(diags, diag.FromErr(err)...)
 				}
 				if len(oldMap["id"].(string)) > 0 {
 					// This can sometimes happen when importing the resource
-					err = c.DeleteConnector(oldMap["id"].(string), d.Id(), oldMap["network_item_type"].(string))
+					err = c.Connectors.Delete(oldMap["id"].(string), d.Id(), oldMap["network_item_type"].(string))
 					if err != nil {
 						return append(diags, diag.FromErr(err)...)
 					}
@@ -286,13 +291,13 @@ func resourceNetworkUpdate(ctx context.Context, d *schema.ResourceData, m interf
 			newMap := newSlice[0].(map[string]interface{})
 			routeType := newMap["type"]
 			routeDesc := newMap["description"]
-			routeValue := newMap["value"]
-			route := client.Route{
+			routeSubnet := newMap["subnet"]
+			route := cloudconnexa.Route{
 				Type:        routeType.(string),
 				Description: routeDesc.(string),
-				Value:       routeValue.(string),
+				Subnet:      routeSubnet.(string),
 			}
-			defaultRoute, err := c.CreateRoute(d.Id(), route)
+			defaultRoute, err := c.Routes.Create(d.Id(), route)
 			if err != nil {
 				return append(diags, diag.FromErr(err)...)
 			}
@@ -310,14 +315,14 @@ func resourceNetworkUpdate(ctx context.Context, d *schema.ResourceData, m interf
 			routeId := newMap["id"]
 			routeType := newMap["type"]
 			routeDesc := newMap["description"]
-			routeValue := newMap["value"]
-			route := client.Route{
+			routeSubnet := newMap["subnet"]
+			route := cloudconnexa.Route{
 				Id:          routeId.(string),
 				Type:        routeType.(string),
 				Description: routeDesc.(string),
-				Value:       routeValue.(string),
+				Subnet:      routeSubnet.(string),
 			}
-			err := c.UpdateRoute(d.Id(), route)
+			err := c.Routes.Update(d.Id(), route)
 			if err != nil {
 				diags = append(diags, diag.FromErr(err)...)
 			}
@@ -328,7 +333,7 @@ func resourceNetworkUpdate(ctx context.Context, d *schema.ResourceData, m interf
 		_, newDescription := d.GetChange("description")
 		_, newEgress := d.GetChange("egress")
 		_, newAccess := d.GetChange("internet_access")
-		err := c.UpdateNetwork(client.Network{
+		err := c.Networks.Update(cloudconnexa.Network{
 			Id:             d.Id(),
 			Name:           newName.(string),
 			Description:    newDescription.(string),
@@ -343,10 +348,10 @@ func resourceNetworkUpdate(ctx context.Context, d *schema.ResourceData, m interf
 }
 
 func resourceNetworkDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	c := m.(*client.Client)
+	c := m.(*cloudconnexa.Client)
 	var diags diag.Diagnostics
 	networkId := d.Id()
-	err := c.DeleteNetwork(networkId)
+	err := c.Networks.Delete(networkId)
 	if err != nil {
 		return append(diags, diag.FromErr(err)...)
 	}

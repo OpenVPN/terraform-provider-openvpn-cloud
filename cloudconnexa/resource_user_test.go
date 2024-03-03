@@ -1,19 +1,19 @@
-package openvpncloud
+package cloudconnexa
 
 import (
 	"errors"
 	"fmt"
+	"github.com/openvpn/cloudconnexa-go-client/v2/cloudconnexa"
 	"testing"
 
-	"github.com/OpenVPN/terraform-provider-openvpn-cloud/client"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 )
 
-func TestAccOpenvpncloudUser_basic(t *testing.T) {
-	rn := "openvpncloud_user.test"
-	user := client.User{
+func TestAccCloudConnexaUser_basic(t *testing.T) {
+	rn := "cloudconnexa_user.test"
+	user := cloudconnexa.User{
 		Username:  acctest.RandStringFromCharSet(10, alphabet),
 		FirstName: acctest.RandStringFromCharSet(10, alphabet),
 		LastName:  acctest.RandStringFromCharSet(10, alphabet),
@@ -23,9 +23,9 @@ func TestAccOpenvpncloudUser_basic(t *testing.T) {
 	userChanged.Email = fmt.Sprintf("terraform-tests+changed%s@devopenvpn.in", acctest.RandString(10))
 	var userID string
 
-	check := func(user client.User) resource.TestCheckFunc {
+	check := func(user cloudconnexa.User) resource.TestCheckFunc {
 		return resource.ComposeTestCheckFunc(
-			testAccCheckOpenvpncloudUserExists(rn, &userID),
+			testAccCheckCloudConnexaUserExists(rn, &userID),
 			resource.TestCheckResourceAttr(rn, "username", user.Username),
 			resource.TestCheckResourceAttr(rn, "email", user.Email),
 			resource.TestCheckResourceAttr(rn, "first_name", user.FirstName),
@@ -36,34 +36,34 @@ func TestAccOpenvpncloudUser_basic(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck:          func() { testAccPreCheck(t) },
 		ProviderFactories: testAccProviderFactories,
-		CheckDestroy:      testAccCheckOpenvpncloudUserDestroy,
+		CheckDestroy:      testAccCheckCloudConnexaUserDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccOpenvpncloudUserConfig(user),
+				Config: testAccCloudConnexaUserConfig(user),
 				Check:  check(user),
 			},
 			{
-				Config: testAccOpenvpncloudUserConfig(userChanged),
+				Config: testAccCloudConnexaUserConfig(userChanged),
 				Check:  check(userChanged),
 			},
 			{
 				ResourceName:      rn,
 				ImportState:       true,
-				ImportStateIdFunc: testAccOpenvpncloudUserImportStateIdFunc(rn),
+				ImportStateIdFunc: testAccCloudConnexaUserImportStateIdFunc(rn),
 				ImportStateVerify: true,
 			},
 		},
 	})
 }
 
-func testAccCheckOpenvpncloudUserDestroy(s *terraform.State) error {
-	client := testAccProvider.Meta().(*client.Client)
+func testAccCheckCloudConnexaUserDestroy(s *terraform.State) error {
+	client := testAccProvider.Meta().(*cloudconnexa.Client)
 	for _, rs := range s.RootModule().Resources {
-		if rs.Type != "openvpncloud_user" {
+		if rs.Type != "cloudconnexa_user" {
 			continue
 		}
 		username := rs.Primary.Attributes["username"]
-		u, err := client.GetUserById(username)
+		u, err := client.Users.Get(username)
 		if err == nil {
 			if u != nil {
 				return errors.New("user still exists")
@@ -73,7 +73,7 @@ func testAccCheckOpenvpncloudUserDestroy(s *terraform.State) error {
 	return nil
 }
 
-func testAccCheckOpenvpncloudUserExists(n string, teamID *string) resource.TestCheckFunc {
+func testAccCheckCloudConnexaUserExists(n string, teamID *string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
 		if !ok {
@@ -84,8 +84,8 @@ func testAccCheckOpenvpncloudUserExists(n string, teamID *string) resource.TestC
 			return errors.New("no ID is set")
 		}
 
-		client := testAccProvider.Meta().(*client.Client)
-		_, err := client.GetUserById(rs.Primary.ID)
+		client := testAccProvider.Meta().(*cloudconnexa.Client)
+		_, err := client.Users.Get(rs.Primary.ID)
 		if err != nil {
 			return err
 		}
@@ -93,7 +93,7 @@ func testAccCheckOpenvpncloudUserExists(n string, teamID *string) resource.TestC
 	}
 }
 
-func testAccOpenvpncloudUserImportStateIdFunc(n string) resource.ImportStateIdFunc {
+func testAccCloudConnexaUserImportStateIdFunc(n string) resource.ImportStateIdFunc {
 	return func(s *terraform.State) (string, error) {
 		rs, ok := s.RootModule().Resources[n]
 		if !ok {
@@ -103,12 +103,12 @@ func testAccOpenvpncloudUserImportStateIdFunc(n string) resource.ImportStateIdFu
 	}
 }
 
-func testAccOpenvpncloudUserConfig(user client.User) string {
+func testAccCloudConnexaUserConfig(user cloudconnexa.User) string {
 	return fmt.Sprintf(`
-provider "openvpncloud" {
+provider "cloudconnexa" {
 	base_url = "https://%s.api.openvpn.com"
 }
-resource "openvpncloud_user" "test" {
+resource "cloudconnexa_user" "test" {
 	username   = "%s"
 	email      = "%s"
 	first_name = "%s"

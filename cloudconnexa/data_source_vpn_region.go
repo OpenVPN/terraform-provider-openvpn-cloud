@@ -1,18 +1,18 @@
-package openvpncloud
+package cloudconnexa
 
 import (
 	"context"
+	"github.com/openvpn/cloudconnexa-go-client/v2/cloudconnexa"
 	"strconv"
 	"time"
 
-	"github.com/OpenVPN/terraform-provider-openvpn-cloud/client"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
 func dataSourceVpnRegion() *schema.Resource {
 	return &schema.Resource{
-		Description: "Use a `openvpncloud_vpn_region` data source to read an OpenVPN Cloud VPN region.",
+		Description: "Use a `cloudconnexa_vpn_region` data source to read an Cloud Connexa VPN region.",
 		ReadContext: dataSourceVpnRegionRead,
 		Schema: map[string]*schema.Schema{
 			"region_id": {
@@ -45,10 +45,10 @@ func dataSourceVpnRegion() *schema.Resource {
 }
 
 func dataSourceVpnRegionRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	c := m.(*client.Client)
+	c := m.(*cloudconnexa.Client)
 	var diags diag.Diagnostics
 	vpnRegionId := d.Get("region_id").(string)
-	vpnRegion, err := c.GetVpnRegion(vpnRegionId)
+	vpnRegion, err := c.VPNRegions.GetVpnRegion(vpnRegionId)
 	if err != nil {
 		return append(diags, diag.FromErr(err)...)
 	}
