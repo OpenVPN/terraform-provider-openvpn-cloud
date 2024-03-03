@@ -5,6 +5,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"github.com/openvpn/cloudconnexa-go-client/v2/cloudconnexa"
 	"io"
 	"net/http"
 	"time"
@@ -25,15 +26,15 @@ type Credentials struct {
 
 func NewClient(baseUrl, clientId, clientSecret string) (*Client, error) {
 	if clientId == "" || clientSecret == "" {
-		return nil, ErrCredentialsRequired
+		return nil, cloudconnexa.ErrCredentialsRequired
 	}
 
 	values := map[string]string{"grant_type": "client_credentials", "scope": "default"}
-	json_data, err := json.Marshal(values)
+	jsonData, err := json.Marshal(values)
 	if err != nil {
 		return nil, err
 	}
-	req, err := http.NewRequest(http.MethodPost, fmt.Sprintf("%s/api/beta/oauth/token", baseUrl), bytes.NewBuffer(json_data))
+	req, err := http.NewRequest(http.MethodPost, fmt.Sprintf("%s/api/beta/oauth/token", baseUrl), bytes.NewBuffer(jsonData))
 	if err != nil {
 		return nil, err
 	}
@@ -48,7 +49,12 @@ func NewClient(baseUrl, clientId, clientSecret string) (*Client, error) {
 	if err != nil {
 		return nil, err
 	}
-	defer resp.Body.Close()
+	defer func(Body io.ReadCloser) {
+		err := Body.Close()
+		if err != nil {
+			fmt.Println(err)
+		}
+	}(resp.Body)
 	var credentials Credentials
 	err = json.Unmarshal(body, &credentials)
 	if err != nil {
@@ -77,7 +83,12 @@ func (c *Client) DoRequest(req *http.Request) ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
-	defer res.Body.Close()
+	defer func(Body io.ReadCloser) {
+		err := Body.Close()
+		if err != nil {
+			fmt.Println(err)
+		}
+	}(res.Body)
 
 	body, err := io.ReadAll(res.Body)
 	if err != nil {
@@ -85,7 +96,7 @@ func (c *Client) DoRequest(req *http.Request) ([]byte, error) {
 	}
 
 	if res.StatusCode < 200 || res.StatusCode >= 300 {
-		return nil, fmt.Errorf("Status code: %d, Response body: %s", res.StatusCode, string(body))
+		return nil, fmt.Errorf("status code: %d, Response body: %s", res.StatusCode, string(body))
 	}
 
 	return body, nil
