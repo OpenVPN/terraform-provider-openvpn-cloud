@@ -151,7 +151,7 @@ func getRoutesSlice(networkRoutes *[]cloudconnexa.Route) []interface{} {
 }
 
 func getConnectorsSlice(connectors *[]cloudconnexa.Connector) []interface{} {
-	conns := make([]interface{}, len(*connectors))
+	cons := make([]interface{}, len(*connectors))
 	for i, c := range *connectors {
 		connector := make(map[string]interface{})
 		connector["id"] = c.Id
@@ -161,7 +161,7 @@ func getConnectorsSlice(connectors *[]cloudconnexa.Connector) []interface{} {
 		connector["vpn_region_id"] = c.VpnRegionId
 		connector["ip_v4_address"] = c.IPv4Address
 		connector["ip_v6_address"] = c.IPv6Address
-		conns[i] = connector
+		cons[i] = connector
 	}
-	return conns
+	return cons
 }
