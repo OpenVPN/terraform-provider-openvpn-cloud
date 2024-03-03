@@ -1,16 +1,16 @@
-package openvpncloud
+package cloudconnexa
 
 import (
 	"context"
-	"github.com/OpenVPN/terraform-provider-openvpn-cloud/client"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
+	"github.com/openvpn/cloudconnexa-go-client/v2/cloudconnexa"
 )
 
 func resourceUser() *schema.Resource {
 	return &schema.Resource{
-		Description:   "Use `openvpncloud_user` to create an OpenVPN Cloud user.",
+		Description:   "Use `cloudconnexa_user` to create an Cloud Connexa user.",
 		CreateContext: resourceUserCreate,
 		ReadContext:   resourceUserRead,
 		UpdateContext: resourceUserUpdate,
@@ -30,7 +30,7 @@ func resourceUser() *schema.Resource {
 				Type:         schema.TypeString,
 				Required:     true,
 				ValidateFunc: validation.StringLenBetween(1, 120),
-				Description:  "An invitation to OpenVPN cloud account will be sent to this email. It will include an initial password and a VPN setup guide.",
+				Description:  "An invitation to Cloud Connexa account will be sent to this email. It will include an initial password and a VPN setup guide.",
 			},
 			"first_name": {
 				Type:         schema.TypeString,
@@ -61,7 +61,7 @@ func resourceUser() *schema.Resource {
 				Optional:    true,
 				ForceNew:    true,
 				MaxItems:    1,
-				Description: "When a user signs in, the device that they use will be added to their account. You can read more at [OpenVPN Cloud Device](https://openvpn.net/cloud-docs/device/).",
+				Description: "When a user signs in, the device that they use will be added to their account. You can read more at [Cloud Connexa Device](https://openvpn.net/cloud-docs/device/).",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"name": {
@@ -94,7 +94,7 @@ func resourceUser() *schema.Resource {
 }
 
 func resourceUserCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	c := m.(*client.Client)
+	c := m.(*cloudconnexa.Client)
 	var diags diag.Diagnostics
 	username := d.Get("username").(string)
 	email := d.Get("email").(string)
@@ -103,12 +103,12 @@ func resourceUserCreate(ctx context.Context, d *schema.ResourceData, m interface
 	groupId := d.Get("group_id").(string)
 	role := d.Get("role").(string)
 	configDevices := d.Get("devices").([]interface{})
-	var devices []client.Device
+	var devices []cloudconnexa.Device
 	for _, d := range configDevices {
 		device := d.(map[string]interface{})
 		devices = append(
 			devices,
-			client.Device{
+			cloudconnexa.Device{
 				Name:        device["name"].(string),
 				Description: device["description"].(string),
 				IPv4Address: device["ipv4_address"].(string),
@@ -117,7 +117,7 @@ func resourceUserCreate(ctx context.Context, d *schema.ResourceData, m interface
 		)
 
 	}
-	u := client.User{
+	u := cloudconnexa.User{
 		Username:  username,
 		Email:     email,
 		FirstName: firstName,
@@ -126,7 +126,7 @@ func resourceUserCreate(ctx context.Context, d *schema.ResourceData, m interface
 		Devices:   devices,
 		Role:      role,
 	}
-	user, err := c.CreateUser(u)
+	user, err := c.Users.Create(u)
 	if err != nil {
 		return append(diags, diag.FromErr(err)...)
 	}
@@ -134,17 +134,17 @@ func resourceUserCreate(ctx context.Context, d *schema.ResourceData, m interface
 	return append(diags, diag.Diagnostic{
 		Severity: diag.Warning,
 		Summary:  "The user's role cannot be changed using the code.",
-		Detail:   "There is a bug in OpenVPN Cloud API that prevents setting the user's role during the creation. All users are created as Members by default. Once it's fixed, the provider will be updated accordingly.",
+		Detail:   "There is a bug in Cloud Connexa API that prevents setting the user's role during the creation. All users are created as Members by default. Once it's fixed, the provider will be updated accordingly.",
 	})
 }
 
 func resourceUserRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	c := m.(*client.Client)
+	c := m.(*cloudconnexa.Client)
 	var diags diag.Diagnostics
 	userId := d.Id()
-	u, err := c.GetUserById(userId)
+	u, err := c.Users.Get(userId)
 
-	// If group_id is not set, OpenVPN cloud sets it to the default group.
+	// If group_id is not set, Cloud Connexa sets it to the default group.
 	var groupId string
 	if d.Get("group_id") == "" {
 		// The group has not been explicitly set.
@@ -172,13 +172,13 @@ func resourceUserRead(ctx context.Context, d *schema.ResourceData, m interface{}
 }
 
 func resourceUserUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	c := m.(*client.Client)
+	c := m.(*cloudconnexa.Client)
 	var diags diag.Diagnostics
 	if !d.HasChanges("first_name", "last_name", "group_id", "email") {
 		return diags
 	}
 
-	u, err := c.GetUserById(d.Id())
+	u, err := c.Users.Get(d.Id())
 	if err != nil {
 		return append(diags, diag.FromErr(err)...)
 	}
@@ -194,14 +194,14 @@ func resourceUserUpdate(ctx context.Context, d *schema.ResourceData, m interface
 	// If both are empty strings, then the group has not been set explicitly.
 	// The update endpoint requires group_id to be set, so we should set it to the default group.
 	if oldGroupId.(string) == "" && groupId == "" {
-		g, err := c.GetUserGroupByName("Default")
+		g, err := c.UserGroups.GetByName("Default")
 		if err != nil {
 			return append(diags, diag.FromErr(err)...)
 		}
-		groupId = g.Id
+		groupId = g.ID
 	}
 
-	err = c.UpdateUser(client.User{
+	err = c.Users.Update(cloudconnexa.User{
 		Id:        d.Id(),
 		Email:     email.(string),
 		FirstName: firstName.(string),
@@ -215,10 +215,10 @@ func resourceUserUpdate(ctx context.Context, d *schema.ResourceData, m interface
 }
 
 func resourceUserDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	c := m.(*client.Client)
+	c := m.(*cloudconnexa.Client)
 	var diags diag.Diagnostics
 	userId := d.Id()
-	err := c.DeleteUser(userId)
+	err := c.Users.Delete(userId)
 	if err != nil {
 		return append(diags, diag.FromErr(err)...)
 	}

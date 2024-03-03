@@ -1,28 +1,28 @@
-package openvpncloud
+package cloudconnexa
 
 import (
 	"fmt"
+	"github.com/openvpn/cloudconnexa-go-client/v2/cloudconnexa"
 	"testing"
 
-	"github.com/OpenVPN/terraform-provider-openvpn-cloud/client"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 )
 
-func TestAccOpenvpncloudConnector_basic(t *testing.T) {
+func TestAccCloudConnexaConnector_basic(t *testing.T) {
 	rName := acctest.RandomWithPrefix("test-connector")
-	resourceName := "openvpncloud_connector.test"
+	resourceName := "cloudconnexa_connector.test"
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:          func() { testAccPreCheck(t) },
 		ProviderFactories: testAccProviderFactories,
-		CheckDestroy:      testAccCheckOpenvpncloudConnectorDestroy,
+		CheckDestroy:      testAccCheckCloudConnexaConnectorDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccOpenvpncloudConnectorConfigBasic(rName),
+				Config: testAccCloudConnexaConnectorConfigBasic(rName),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckOpenvpncloudConnectorExists(resourceName),
+					testAccCheckCloudConnexaConnectorExists(resourceName),
 					resource.TestCheckResourceAttr(resourceName, "name", rName),
 					resource.TestCheckResourceAttrSet(resourceName, "vpn_region_id"),
 					resource.TestCheckResourceAttrSet(resourceName, "network_item_type"),
@@ -35,7 +35,7 @@ func TestAccOpenvpncloudConnector_basic(t *testing.T) {
 	})
 }
 
-func testAccCheckOpenvpncloudConnectorExists(n string) resource.TestCheckFunc {
+func testAccCheckCloudConnexaConnectorExists(n string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
 		if !ok {
@@ -48,36 +48,36 @@ func testAccCheckOpenvpncloudConnectorExists(n string) resource.TestCheckFunc {
 	}
 }
 
-func testAccCheckOpenvpncloudConnectorDestroy(s *terraform.State) error {
-	client := testAccProvider.Meta().(*client.Client)
+func testAccCheckCloudConnexaConnectorDestroy(s *terraform.State) error {
+	client := testAccProvider.Meta().(*cloudconnexa.Client)
 
 	for _, rs := range s.RootModule().Resources {
-		if rs.Type != "openvpncloud_connector" {
+		if rs.Type != "cloudconnexa_connector" {
 			continue
 		}
 
 		connectorId := rs.Primary.ID
-		connector, err := client.GetConnectorById(connectorId)
+		connector, err := client.Connectors.GetByID(connectorId)
 
 		if err != nil {
 			return err
 		}
 
 		if connector != nil {
-			return fmt.Errorf("Connector with ID '%s' still exists", connectorId)
+			return fmt.Errorf("connector with ID '%s' still exists", connectorId)
 		}
 	}
 
 	return nil
 }
 
-func testAccOpenvpncloudConnectorConfigBasic(rName string) string {
+func testAccCloudConnexaConnectorConfigBasic(rName string) string {
 	return fmt.Sprintf(`
-provider "openvpncloud" {
+provider "cloudconnexa" {
   base_url = "https://%[1]s.api.openvpn.com"
 }
 
-resource "openvpncloud_connector" "test" {
+resource "cloudconnexa_connector" "test" {
   name              = "%s"
   vpn_region_id     = "us-west-1"
   network_item_type = "HOST"

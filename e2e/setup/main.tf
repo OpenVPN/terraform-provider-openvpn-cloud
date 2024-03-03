@@ -1,8 +1,8 @@
 terraform {
   required_providers {
     openvpn-cloud = {
-      version = "0.0.7"
-      source  = "openvpncloud.dev/openvpn/openvpncloud"
+      version = "0.0.11"
+      source  = "cloudconnexa.dev/openvpn/openvpncloud"
     }
   }
 }
@@ -16,7 +16,7 @@ variable "host_name" {
   type    = string
 }
 
-resource "openvpncloud_host" "host" {
+resource "cloudconnexa_host" "host" {
   name            = "TEST_HOST_NAME"
   description     = "Terraform test description 2"
   internet_access = "LOCAL"
@@ -30,14 +30,14 @@ resource "openvpncloud_host" "host" {
 }
 
 locals {
-  connector_profile = [for connector in openvpncloud_host.host.connector : connector.profile][0]
+  connector_profile = [for connector in cloudconnexa_host.host.connector : connector.profile][0]
 }
 
 
 output "host_id" {
-  value = openvpncloud_host.host.id
+  value = cloudconnexa_host.host.id
 }
 
 output "connector_id" {
-  value = [for connector in openvpncloud_host.host.connector : connector.id][0]
+  value = [for connector in cloudconnexa_host.host.connector : connector.id][0]
 }

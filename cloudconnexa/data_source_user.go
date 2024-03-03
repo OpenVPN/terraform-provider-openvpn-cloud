@@ -1,18 +1,18 @@
-package openvpncloud
+package cloudconnexa
 
 import (
 	"context"
+	"github.com/openvpn/cloudconnexa-go-client/v2/cloudconnexa"
 	"strconv"
 	"time"
 
-	"github.com/OpenVPN/terraform-provider-openvpn-cloud/client"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
 func dataSourceUser() *schema.Resource {
 	return &schema.Resource{
-		Description: "Use a `openvpncloud_user` data source to read a specific OpenVPN Cloud user.",
+		Description: "Use a `cloudconnexa_user` data source to read a specific Cloud Connexa user.",
 		ReadContext: dataSourceUserRead,
 		Schema: map[string]*schema.Schema{
 			"user_id": {
@@ -99,16 +99,17 @@ func dataSourceUser() *schema.Resource {
 }
 
 func dataSourceUserRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	c := m.(*client.Client)
+	c := m.(*cloudconnexa.Client)
 	var diags diag.Diagnostics
 	userName := d.Get("username").(string)
-	user, err := c.GetUser(userName, d.Get("role").(string))
+	user, err := c.Users.Get(userName)
 	if err != nil {
 		return append(diags, diag.FromErr(err)...)
 	}
 	if user == nil {
 		return append(diags, diag.Errorf("User with name %s was not found", userName)...)
 	}
+
 	d.Set("user_id", user.Id)
 	d.Set("username", user.Username)
 	d.Set("role", user.Role)
@@ -123,7 +124,7 @@ func dataSourceUserRead(ctx context.Context, d *schema.ResourceData, m interface
 	return diags
 }
 
-func getUserDevicesSlice(userDevices *[]client.Device) []interface{} {
+func getUserDevicesSlice(userDevices *[]cloudconnexa.Device) []interface{} {
 	devices := make([]interface{}, len(*userDevices))
 	for i, d := range *userDevices {
 		device := make(map[string]interface{})

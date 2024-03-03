@@ -1,18 +1,18 @@
-package openvpncloud
+package cloudconnexa
 
 import (
 	"context"
 	"strconv"
 	"time"
 
-	"github.com/OpenVPN/terraform-provider-openvpn-cloud/client"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/openvpn/cloudconnexa-go-client/v2/cloudconnexa"
 )
 
 func dataSourceConnector() *schema.Resource {
 	return &schema.Resource{
-		Description: "Use an `openvpncloud_connector` data source to read an existing OpenVPN Cloud connector.",
+		Description: "Use an `cloudconnexa_connector` data source to read an existing Cloud Connexa connector.",
 		ReadContext: dataSourceConnectorRead,
 		Schema: map[string]*schema.Schema{
 			"name": {
@@ -50,9 +50,9 @@ func dataSourceConnector() *schema.Resource {
 }
 
 func dataSourceConnectorRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	c := m.(*client.Client)
+	c := m.(*cloudconnexa.Client)
 	var diags diag.Diagnostics
-	connector, err := c.GetConnectorByName(d.Get("name").(string))
+	connector, err := c.Connectors.GetByName(d.Get("name").(string))
 	if err != nil {
 		return append(diags, diag.FromErr(err)...)
 	}

@@ -1,20 +1,20 @@
-package openvpncloud
+package cloudconnexa
 
 import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"github.com/openvpn/cloudconnexa-go-client/v2/cloudconnexa"
 	"testing"
 
-	"github.com/OpenVPN/terraform-provider-openvpn-cloud/client"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 )
 
-func TestAccOpenvpncloudUserGroup_basic(t *testing.T) {
-	rn := "openvpncloud_user_group.test"
-	userGroup := client.UserGroup{
+func TestAccCloudConnexaUserGroup_basic(t *testing.T) {
+	rn := "cloudconnexa_user_group.test"
+	userGroup := cloudconnexa.UserGroup{
 		Name: acctest.RandStringFromCharSet(10, alphabet),
 		VpnRegionIds: []string{
 			"us-east-1",
@@ -23,9 +23,9 @@ func TestAccOpenvpncloudUserGroup_basic(t *testing.T) {
 	userGroupChanged := userGroup
 	userGroupChanged.Name = fmt.Sprintf("changed-%s", acctest.RandStringFromCharSet(10, alphabet))
 
-	check := func(userGroup client.UserGroup) resource.TestCheckFunc {
+	check := func(userGroup cloudconnexa.UserGroup) resource.TestCheckFunc {
 		return resource.ComposeTestCheckFunc(
-			testAccCheckOpenvpncloudUserGroupExists(rn),
+			testAccCheckCloudConnexaUserGroupExists(rn),
 			resource.TestCheckResourceAttr(rn, "name", userGroup.Name),
 			resource.TestCheckResourceAttr(rn, "vpn_region_ids.0", userGroup.VpnRegionIds[0]),
 		)
@@ -34,34 +34,34 @@ func TestAccOpenvpncloudUserGroup_basic(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck:          func() { testAccPreCheck(t) },
 		ProviderFactories: testAccProviderFactories,
-		CheckDestroy:      testAccCheckOpenvpncloudUserGroupDestroy,
+		CheckDestroy:      testAccCheckCloudConnexaUserGroupDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccOpenvpncloudUserGroupConfig(userGroup),
+				Config: testAccCloudConnexaUserGroupConfig(userGroup),
 				Check:  check(userGroup),
 			},
 			{
-				Config: testAccOpenvpncloudUserGroupConfig(userGroupChanged),
+				Config: testAccCloudConnexaUserGroupConfig(userGroupChanged),
 				Check:  check(userGroupChanged),
 			},
 			{
 				ResourceName:      rn,
 				ImportState:       true,
-				ImportStateIdFunc: testAccOpenvpncloudUserImportStateIdFunc(rn),
+				ImportStateIdFunc: testAccCloudConnexaUserImportStateIdFunc(rn),
 				ImportStateVerify: true,
 			},
 		},
 	})
 }
 
-func testAccCheckOpenvpncloudUserGroupDestroy(s *terraform.State) error {
-	c := testAccProvider.Meta().(*client.Client)
+func testAccCheckCloudConnexaUserGroupDestroy(s *terraform.State) error {
+	c := testAccProvider.Meta().(*cloudconnexa.Client)
 	for _, rs := range s.RootModule().Resources {
-		if rs.Type != "openvpncloud_user_group" {
+		if rs.Type != "cloudconnexa_user_group" {
 			continue
 		}
 		username := rs.Primary.Attributes["username"]
-		u, err := c.GetUserGroupById(username)
+		u, err := c.UserGroups.GetByName(username)
 		if err == nil {
 			if u != nil {
 				return errors.New("user still exists")
@@ -71,7 +71,7 @@ func testAccCheckOpenvpncloudUserGroupDestroy(s *terraform.State) error {
 	return nil
 }
 
-func testAccCheckOpenvpncloudUserGroupExists(rn string) resource.TestCheckFunc {
+func testAccCheckCloudConnexaUserGroupExists(rn string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[rn]
 		if !ok {
@@ -82,8 +82,8 @@ func testAccCheckOpenvpncloudUserGroupExists(rn string) resource.TestCheckFunc {
 			return errors.New("no ID is set")
 		}
 
-		c := testAccProvider.Meta().(*client.Client)
-		_, err := c.GetUserGroupById(rs.Primary.ID)
+		c := testAccProvider.Meta().(*cloudconnexa.Client)
+		_, err := c.UserGroups.Get(rs.Primary.ID)
 		if err != nil {
 			return err
 		}
@@ -91,14 +91,14 @@ func testAccCheckOpenvpncloudUserGroupExists(rn string) resource.TestCheckFunc {
 	}
 }
 
-func testAccOpenvpncloudUserGroupConfig(userGroup client.UserGroup) string {
+func testAccCloudConnexaUserGroupConfig(userGroup cloudconnexa.UserGroup) string {
 	idsStr, _ := json.Marshal(userGroup.VpnRegionIds)
 
 	return fmt.Sprintf(`
-provider "openvpncloud" {
+provider "cloudconnexa" {
 	base_url = "https://%s.api.openvpn.com"
 }
-resource "openvpncloud_user_group" "test" {
+resource "cloudconnexa_user_group" "test" {
 	name = "%s"
 	vpn_region_ids = %s
 

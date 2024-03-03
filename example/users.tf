@@ -1,4 +1,4 @@
-resource "openvpncloud_user" "this" {
+resource "cloudconnexa_user" "this" {
   for_each   = var.users
   username   = each.value.username
   email      = each.value.email

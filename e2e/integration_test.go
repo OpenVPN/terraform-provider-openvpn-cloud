@@ -2,8 +2,9 @@ package e2e
 
 import (
 	"fmt"
-	api "github.com/OpenVPN/terraform-provider-openvpn-cloud/client"
+	"github.com/OpenVPN/terraform-provider-openvpn-cloud/cloudconnexa"
 	"github.com/gruntwork-io/terratest/modules/terraform"
+	api "github.com/openvpn/cloudconnexa-go-client/v2/cloudconnexa"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"os"
@@ -12,9 +13,7 @@ import (
 )
 
 const (
-	OpenvpnHostKey              = "OVPN_HOST"
-	OpenvpnCloudClientIdKey     = "OPENVPN_CLOUD_CLIENT_ID"
-	OpenvpnCloudClientSecretKey = "OPENVPN_CLOUD_CLIENT_SECRET"
+	CloudConnexaHostKey = "OVPN_HOST"
 )
 
 func TestCreationDeletion(t *testing.T) {
@@ -47,9 +46,9 @@ func TestCreationDeletion(t *testing.T) {
 	assert.NotEmpty(t, connectorID)
 
 	client, err := api.NewClient(
-		os.Getenv(OpenvpnHostKey),
-		os.Getenv(OpenvpnCloudClientIdKey),
-		os.Getenv(OpenvpnCloudClientSecretKey),
+		os.Getenv(CloudConnexaHostKey),
+		os.Getenv(cloudconnexa.ClientIDEnvVar),
+		os.Getenv(cloudconnexa.ClientSecretEnvVar),
 	)
 	require.NoError(t, err)
 
@@ -60,9 +59,9 @@ func TestCreationDeletion(t *testing.T) {
 	connectorWasOnline := false
 	for i := 0; i < totalAttempts; i++ {
 		t.Logf("Waiting for connector to be online (%d/%d)", i+1, totalAttempts)
-		connector, err := client.GetConnectorById(connectorID)
+		connector, err := client.Connectors.GetByID(connectorID)
 		require.NoError(t, err, "Invalid connector ID in output")
-		if connector.ConnectionStatus == api.ConnectionStatusOnline {
+		if connector.ConnectionStatus == "online" {
 			connectorWasOnline = true
 			break
 		}
@@ -72,9 +71,9 @@ func TestCreationDeletion(t *testing.T) {
 }
 
 func validateEnvVars(t *testing.T) {
-	validateEnvVar(t, OpenvpnHostKey)
-	validateEnvVar(t, OpenvpnCloudClientIdKey)
-	validateEnvVar(t, OpenvpnCloudClientSecretKey)
+	validateEnvVar(t, CloudConnexaHostKey)
+	validateEnvVar(t, cloudconnexa.ClientIDEnvVar)
+	validateEnvVar(t, cloudconnexa.ClientSecretEnvVar)
 }
 
 func validateEnvVar(t *testing.T, envVar string) {

@@ -1,4 +1,4 @@
-# Terraform Provider OpenVPN Cloud
+# Terraform Provider Cloud Connexa
 
 <a href="https://www.terraform.io/" target="_blank">
   <img align="right" src="https://upload.wikimedia.org/wikipedia/commons/thumb/0/04/Terraform_Logo.svg/2560px-Terraform_Logo.svg.png" alt="Terraform" width="120px">
@@ -12,18 +12,18 @@
   <img align="right" src="https://upload.wikimedia.org/wikipedia/commons/thumb/f/f5/OpenVPN_logo.svg/2560px-OpenVPN_logo.svg.png" alt="OpenVPN" width="150px">
 </a>
 
-- [Website OpenVPN Cloud](https://openvpn.net/cloud-vpn/?utm_source=terraform&utm_medium=docs)
+- [Website Cloud Connexa](https://openvpn.net/cloud-vpn/?utm_source=terraform&utm_medium=docs)
 - [Terraform Registry](https://registry.terraform.io/providers/OpenVPN/openvpn-cloud/latest)
 
 ## Description
 
-The Terraform provider for [OpenVPN Cloud](https://openvpn.net/cloud-vpn/?utm_source=terraform&utm_medium=docs) allows teams to configure and update OpenVPN Cloud project parameters via their command line.
+The Terraform provider for [Cloud Connexa](https://openvpn.net/cloud-vpn/?utm_source=terraform&utm_medium=docs) allows teams to configure and update Cloud Connexa project parameters via their command line.
 
 ## Maintainers
 
 This provider plugin is maintained by:
 
-- OpenVPN team at [OpenVPN Cloud](https://openvpn.net/cloud-vpn/?utm_source=terraform&utm_medium=docs)
+- OpenVPN team at [Cloud Connexa](https://openvpn.net/cloud-vpn/?utm_source=terraform&utm_medium=docs)
 - SRE Team at [ANNA Money](https://anna.money/?utm_source=terraform&utm_medium=referral&utm_campaign=docs) / [GitHub ANNA Money](http://github.com/anna-money/)
 - [@patoarvizu](https://github.com/patoarvizu)
 
@@ -75,4 +75,4 @@ _Note:_ Acceptance tests create real resources, and often cost money to run.
 make testacc
 ```
 
-_**Please note:** This provider, like OpenVPN Cloud API, is in beta status. Report any problems via issue in this repo._
+_**Please note:** This provider, like Cloud Connexa API, is in beta status. Report any problems via issue in this repo._
