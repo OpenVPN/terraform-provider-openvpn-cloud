@@ -1,15 +1,15 @@
-package openvpncloud
+package cloudconnexa
 
 import (
 	"context"
-	"github.com/OpenVPN/terraform-provider-openvpn-cloud/client"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/openvpn/cloudconnexa-go-client/v2/cloudconnexa"
 )
 
-func dataSourceService() *schema.Resource {
+func dataSourceIPService() *schema.Resource {
 	return &schema.Resource{
-		ReadContext: dataSourceServiceRead,
+		ReadContext: dataSourceIPServiceRead,
 		Schema: map[string]*schema.Schema{
 			"id": {
 				Type:     schema.TypeString,
@@ -51,12 +51,10 @@ func dataSourceService() *schema.Resource {
 	}
 }
 
-func dataSourceServiceRead(ctx context.Context, data *schema.ResourceData, i interface{}) diag.Diagnostics {
-	c := i.(*client.Client)
-	service, err := c.GetService(
+func dataSourceIPServiceRead(ctx context.Context, data *schema.ResourceData, i interface{}) diag.Diagnostics {
+	c := i.(*cloudconnexa.Client)
+	service, err := c.IPServices.Get(
 		data.Id(),
-		data.Get("network_item_type").(string),
-		data.Get("network_item_id").(string),
 	)
 
 	if err != nil {

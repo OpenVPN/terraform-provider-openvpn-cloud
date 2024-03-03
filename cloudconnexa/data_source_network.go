@@ -1,18 +1,18 @@
-package openvpncloud
+package cloudconnexa
 
 import (
 	"context"
+	"github.com/openvpn/cloudconnexa-go-client/v2/cloudconnexa"
 	"strconv"
 	"time"
 
-	"github.com/OpenVPN/terraform-provider-openvpn-cloud/client"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
 func dataSourceNetwork() *schema.Resource {
 	return &schema.Resource{
-		Description: "Use a `openvpncloud_network` data source to read an OpenVPN Cloud network.",
+		Description: "Use a `cloudconnexa_network` data source to read an Cloud Connexa network.",
 		ReadContext: dataSourceNetworkRead,
 		Schema: map[string]*schema.Schema{
 			"network_id": {
@@ -116,10 +116,10 @@ func dataSourceNetwork() *schema.Resource {
 }
 
 func dataSourceNetworkRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	c := m.(*client.Client)
+	c := m.(*cloudconnexa.Client)
 	var diags diag.Diagnostics
 	networkName := d.Get("name").(string)
-	network, err := c.GetNetworkByName(networkName)
+	network, err := c.Networks.GetByName(networkName)
 	if err != nil {
 		return append(diags, diag.FromErr(err)...)
 	}
@@ -133,12 +133,12 @@ func dataSourceNetworkRead(ctx context.Context, d *schema.ResourceData, m interf
 	d.Set("internet_access", network.InternetAccess)
 	d.Set("system_subnets", network.SystemSubnets)
 	d.Set("routes", getRoutesSlice(&network.Routes))
-	d.Set("connectors", getConnectorsSlice(&network.Connectors))
+	//d.Set("connectors", getConnectorsSlice(&network.Connectors))
 	d.SetId(strconv.FormatInt(time.Now().Unix(), 10))
 	return diags
 }
 
-func getRoutesSlice(networkRoutes *[]client.Route) []interface{} {
+func getRoutesSlice(networkRoutes *[]cloudconnexa.Route) []interface{} {
 	routes := make([]interface{}, len(*networkRoutes))
 	for i, r := range *networkRoutes {
 		route := make(map[string]interface{})
@@ -150,7 +150,7 @@ func getRoutesSlice(networkRoutes *[]client.Route) []interface{} {
 	return routes
 }
 
-func getConnectorsSlice(connectors *[]client.Connector) []interface{} {
+func getConnectorsSlice(connectors *[]cloudconnexa.Connector) []interface{} {
 	conns := make([]interface{}, len(*connectors))
 	for i, c := range *connectors {
 		connector := make(map[string]interface{})

@@ -66,8 +66,8 @@ jobs:
         timeout-minutes: 10
         env:
           TF_ACC: "1"
-          OPENVPNCLOUD_TEST_ORGANIZATION: "terraform-community"
-          OPENVPN_CLOUD_CLIENT_ID: ${{ secrets.CVPN_CLIENT_ID }}
-          OPENVPN_CLOUD_CLIENT_SECRET: ${{ secrets.CVPN_CLIENT_SECRET }}
+          CLOUDCONNEXA_TEST_ORGANIZATION: "terraform-community"
+          CLOUDCONNEXA_CLIENT_ID: ${{ secrets.CVPN_CLIENT_ID }}
+          CLOUDCONNEXA_CLIENT_SECRET: ${{ secrets.CVPN_CLIENT_SECRET }}
         run: |
-          go test -v -cover ./openvpncloud
+          go test -v -cover ./cloudconnexa

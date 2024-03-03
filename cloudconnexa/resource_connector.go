@@ -1,9 +1,9 @@
-package openvpncloud
+package cloudconnexa
 
 import (
 	"context"
+	"github.com/openvpn/cloudconnexa-go-client/v2/cloudconnexa"
 
-	"github.com/OpenVPN/terraform-provider-openvpn-cloud/client"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
@@ -11,7 +11,7 @@ import (
 
 func resourceConnector() *schema.Resource {
 	return &schema.Resource{
-		Description:   "Use `openvpncloud_connector` to create an OpenVPN Cloud connector.\n\n~> NOTE: This only creates the OpenVPN Cloud connector object. Additional manual steps are required to associate a host in your infrastructure with the connector. Go to https://openvpn.net/cloud-docs/connector/ for more information.",
+		Description:   "Use `cloudconnexa_connector` to create an Cloud Connexa connector.\n\n~> NOTE: This only creates the Cloud Connexa connector object. Additional manual steps are required to associate a host in your infrastructure with the connector. Go to https://openvpn.net/cloud-docs/connector/ for more information.",
 		CreateContext: resourceConnectorCreate,
 		ReadContext:   resourceConnectorRead,
 		DeleteContext: resourceConnectorDelete,
@@ -35,7 +35,7 @@ func resourceConnector() *schema.Resource {
 				Type:         schema.TypeString,
 				Required:     true,
 				ForceNew:     true,
-				ValidateFunc: validation.StringInSlice([]string{client.NetworkItemTypeHost, client.NetworkItemTypeNetwork}, false),
+				ValidateFunc: validation.StringInSlice([]string{"HOST", "NETWORK"}, false),
 				Description:  "The type of network item of the connector. Supported values are `HOST` and `NETWORK`.",
 			},
 			"network_item_id": {
@@ -59,19 +59,19 @@ func resourceConnector() *schema.Resource {
 }
 
 func resourceConnectorCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	c := m.(*client.Client)
+	c := m.(*cloudconnexa.Client)
 	var diags diag.Diagnostics
 	name := d.Get("name").(string)
 	networkItemId := d.Get("network_item_id").(string)
 	networkItemType := d.Get("network_item_type").(string)
 	vpnRegionId := d.Get("vpn_region_id").(string)
-	connector := client.Connector{
+	connector := cloudconnexa.Connector{
 		Name:            name,
 		NetworkItemId:   networkItemId,
 		NetworkItemType: networkItemType,
 		VpnRegionId:     vpnRegionId,
 	}
-	conn, err := c.AddConnector(connector, networkItemId)
+	conn, err := c.Connectors.Create(connector, networkItemId)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -79,14 +79,14 @@ func resourceConnectorCreate(ctx context.Context, d *schema.ResourceData, m inte
 	return append(diags, diag.Diagnostic{
 		Severity: diag.Warning,
 		Summary:  "Connector needs to be set up manually",
-		Detail:   "Terraform only creates the OpenVPN Cloud connector object, but additional manual steps are required to associate a host in your infrastructure with this connector. Go to https://openvpn.net/cloud-docs/connector/ for more information.",
+		Detail:   "Terraform only creates the Cloud Connexa connector object, but additional manual steps are required to associate a host in your infrastructure with this connector. Go to https://openvpn.net/cloud-docs/connector/ for more information.",
 	})
 }
 
 func resourceConnectorRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	c := m.(*client.Client)
+	c := m.(*cloudconnexa.Client)
 	var diags diag.Diagnostics
-	connector, err := c.GetConnectorById(d.Id())
+	connector, err := c.Connectors.GetByID(d.Id())
 	if err != nil {
 		return append(diags, diag.FromErr(err)...)
 	}
@@ -105,16 +105,16 @@ func resourceConnectorRead(ctx context.Context, d *schema.ResourceData, m interf
 }
 
 func resourceConnectorDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	c := m.(*client.Client)
+	c := m.(*cloudconnexa.Client)
 	var diags diag.Diagnostics
-	err := c.DeleteConnector(d.Id(), d.Get("network_item_id").(string), d.Get("network_item_type").(string))
+	err := c.Connectors.Delete(d.Id(), d.Get("network_item_id").(string), d.Get("network_item_type").(string))
 	if err != nil {
 		return append(diags, diag.FromErr(err)...)
 	}
 	return diags
 }
 
-func getConnectorSlice(connectors []client.Connector, networkItemId string, connectorName string) []interface{} {
+func getConnectorSlice(connectors []cloudconnexa.Connector, networkItemId string, connectorName string) []interface{} {
 	if len(connectors) == 0 {
 		return nil
 	}
