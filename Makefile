@@ -1,7 +1,7 @@
 HOSTNAME=cloudconnexa.dev
 NAMESPACE=openvpn
 NAME=cloudconnexa
-VERSION=0.0.11
+VERSION=0.0.12-dev
 BINARY=terraform-provider-${NAME}
 OS_ARCH=darwin_arm64
 
