@@ -45,6 +45,11 @@ func dataSourceConnector() *schema.Resource {
 				Computed:    true,
 				Description: "The IPV6 address of the connector.",
 			},
+			"profile": {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "OpenVPN profile",
+			},
 		},
 	}
 }
@@ -62,6 +67,11 @@ func dataSourceConnectorRead(ctx context.Context, d *schema.ResourceData, m inte
 	d.Set("vpn_region_id", connector.VpnRegionId)
 	d.Set("ip_v4_address", connector.IPv4Address)
 	d.Set("ip_v6_address", connector.IPv6Address)
+	profile, err := c.Connectors.GetProfile(connector.Id)
+	if err != nil {
+		return append(diags, diag.FromErr(err)...)
+	}
+	d.Set("profile", profile)
 	d.SetId(strconv.FormatInt(time.Now().Unix(), 10))
 	return diags
 }

@@ -2,6 +2,7 @@ package cloudconnexa
 
 import (
 	"context"
+
 	"github.com/openvpn/cloudconnexa-go-client/v2/cloudconnexa"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -73,7 +74,7 @@ func resourceNetwork() *schema.Resource {
 							Default:     "Managed by Terraform.",
 							Description: "The default route description.",
 						},
-						"value": {
+						"subnet": {
 							Type:        schema.TypeString,
 							Required:    true,
 							Description: "The target value of the default route.",
@@ -233,7 +234,7 @@ func resourceNetworkRead(ctx context.Context, d *schema.ResourceData, m interfac
 				},
 			}
 			if route.Type == "IP_V4" || route.Type == "IP_V6" {
-				defaultRoute[0]["value"] = route.Subnet
+				defaultRoute[0]["subnet"] = route.Subnet
 			}
 			d.Set("default_route", defaultRoute)
 		}

@@ -2,6 +2,7 @@ package cloudconnexa
 
 import (
 	"context"
+
 	"github.com/openvpn/cloudconnexa-go-client/v2/cloudconnexa"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -54,6 +55,11 @@ func resourceConnector() *schema.Resource {
 				Computed:    true,
 				Description: "The IPV6 address of the connector.",
 			},
+			"profile": {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "OpenVPN profile",
+			},
 		},
 	}
 }
@@ -76,6 +82,11 @@ func resourceConnectorCreate(ctx context.Context, d *schema.ResourceData, m inte
 		return diag.FromErr(err)
 	}
 	d.SetId(conn.Id)
+	profile, err := c.Connectors.GetProfile(conn.Id)
+	if err != nil {
+		return append(diags, diag.FromErr(err)...)
+	}
+	d.Set("profile", profile)
 	return append(diags, diag.Diagnostic{
 		Severity: diag.Warning,
 		Summary:  "Connector needs to be set up manually",
@@ -100,6 +111,11 @@ func resourceConnectorRead(ctx context.Context, d *schema.ResourceData, m interf
 		d.Set("network_item_id", connector.NetworkItemId)
 		d.Set("ip_v4_address", connector.IPv4Address)
 		d.Set("ip_v6_address", connector.IPv6Address)
+		profile, err := c.Connectors.GetProfile(connector.Id)
+		if err != nil {
+			return append(diags, diag.FromErr(err)...)
+		}
+		d.Set("profile", profile)
 	}
 	return diags
 }
