@@ -22,7 +22,7 @@ func validateEnvVar(t *testing.T, envVar string) {
 }
 
 const (
-	HostEnvVar         = "CLOUDCONNEXA_HOST"
+	HostEnvVar         = "OVPN_HOST"
 	ClientIDEnvVar     = "CLOUDCONNEXA_CLIENT_ID"
 	ClientSecretEnvVar = "CLOUDCONNEXA_CLIENT_SECRET"
 )
