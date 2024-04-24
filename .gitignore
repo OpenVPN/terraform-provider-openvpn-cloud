@@ -35,3 +35,4 @@ terraform.tfstate**
 
 *.env
 /.vscode
+registry.terraform.io/openvpn/cloudconnexa/0.0.12/darwin_arm64/terraform-provider-cloudconnexa_v0.0.12
