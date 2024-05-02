@@ -2,6 +2,7 @@ package cloudconnexa
 
 import (
 	"context"
+
 	"github.com/openvpn/cloudconnexa-go-client/v2/cloudconnexa"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -27,7 +28,7 @@ func resourceRoute() *schema.Resource {
 				ValidateFunc: validation.StringInSlice([]string{"IP_V4", "IP_V6"}, false),
 				Description:  "The type of route. Valid values are `IP_V4`, `IP_V6`, and `DOMAIN`.",
 			},
-			"value": {
+			"subnet": {
 				Type:        schema.TypeString,
 				Required:    true,
 				ForceNew:    true,
@@ -66,7 +67,7 @@ func resourceRouteCreate(ctx context.Context, d *schema.ResourceData, m interfac
 	}
 	d.SetId(route.Id)
 	if routeType == "IP_V4" || routeType == "IP_V6" {
-		d.Set("value", route.Subnet)
+		d.Set("subnet", route.Subnet)
 	}
 	return diags
 }
@@ -84,7 +85,7 @@ func resourceRouteRead(ctx context.Context, d *schema.ResourceData, m interface{
 	} else {
 		d.Set("type", r.Type)
 		if r.Type == "IP_V4" || r.Type == "IP_V6" {
-			d.Set("value", r.Subnet)
+			d.Set("subnet", r.Subnet)
 		}
 		d.Set("description", r.Description)
 		d.Set("network_item_id", r.NetworkItemId)
@@ -95,7 +96,7 @@ func resourceRouteRead(ctx context.Context, d *schema.ResourceData, m interface{
 func resourceRouteUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	c := m.(*cloudconnexa.Client)
 	var diags diag.Diagnostics
-	if !d.HasChanges("description", "value") {
+	if !d.HasChanges("description", "subnet") {
 		return diags
 	}
 

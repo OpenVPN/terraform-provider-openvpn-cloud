@@ -2,6 +2,7 @@ package cloudconnexa
 
 import (
 	"context"
+
 	"github.com/hashicorp/go-cty/cty"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -73,7 +74,6 @@ func resourceServiceUpdate(ctx context.Context, data *schema.ResourceData, i int
 	if err != nil {
 		return diag.FromErr(err)
 	}
-
 	setResourceData(data, s)
 	return nil
 }
@@ -137,12 +137,11 @@ func resourceServiceRead(ctx context.Context, data *schema.ResourceData, i inter
 		data.SetId("")
 		return diags
 	}
-
 	setResourceData(data, service)
 	return diags
 }
 
-func setResourceData(data *schema.ResourceData, service *cloudconnexa.IPService) {
+func setResourceData(data *schema.ResourceData, service *cloudconnexa.IPServiceResponse) {
 	data.SetId(service.Id)
 	_ = data.Set("name", service.Name)
 	_ = data.Set("description", service.Description)
@@ -198,12 +197,12 @@ func flattenIcmpType(icmpType []cloudconnexa.Range) interface{} {
 	return data
 }
 
-func flattenRoutes(routes []*cloudconnexa.IPServiceRoute) []string {
+func flattenRoutes(routes []*cloudconnexa.Route) []string {
 	var data []string
 	for _, route := range routes {
 		data = append(
 			data,
-			route.Value,
+			route.Subnet,
 		)
 	}
 	return data
@@ -217,10 +216,10 @@ func resourceIPServiceCreate(ctx context.Context, data *schema.ResourceData, m i
 	if err != nil {
 		return diag.FromErr(err)
 	}
-
 	setResourceData(data, createdService)
 	return nil
 }
+
 func resourceDataToService(data *schema.ResourceData) *cloudconnexa.IPService {
 	routes := data.Get("routes").([]interface{})
 	var configRoutes []*cloudconnexa.IPServiceRoute
@@ -228,7 +227,8 @@ func resourceDataToService(data *schema.ResourceData) *cloudconnexa.IPService {
 		configRoutes = append(
 			configRoutes,
 			&cloudconnexa.IPServiceRoute{
-				Value: r.(string),
+				Value:       r.(string),
+				Description: "Managed by Terraform",
 			},
 		)
 	}

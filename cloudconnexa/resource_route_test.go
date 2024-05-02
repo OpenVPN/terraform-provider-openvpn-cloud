@@ -3,8 +3,9 @@ package cloudconnexa
 import (
 	"errors"
 	"fmt"
-	"github.com/openvpn/cloudconnexa-go-client/v2/cloudconnexa"
 	"testing"
+
+	"github.com/openvpn/cloudconnexa-go-client/v2/cloudconnexa"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
@@ -31,7 +32,7 @@ func TestAccCloudConnexaRoute_basic(t *testing.T) {
 			testAccCheckCloudConnexaRouteExists(rn, &routeId),
 			resource.TestCheckResourceAttr(rn, "description", r.Description),
 			resource.TestCheckResourceAttr(rn, "type", r.Type),
-			resource.TestCheckResourceAttr(rn, "value", r.Subnet),
+			resource.TestCheckResourceAttr(rn, "subnet", r.Subnet),
 		)
 	}
 
@@ -118,14 +119,14 @@ resource "cloudconnexa_network" "test" {
 	  vpn_region_id = "fi-hel"
 	}
 	default_route {
-	  value = "10.1.2.0/24"
+	  subnet = "10.1.2.0/24"
 	  type  = "IP_V4"
 	}
 }
 resource "cloudconnexa_route" "test" {
 	network_item_id = cloudconnexa_network.test.id
 	description     = "%[2]s"
-	value           = "%[3]s"
+	subnet          = "%[3]s"
 	type            = "%[4]s"
 }
 `, testCloudID, r.Description, r.Subnet, r.Type, networkRandStr)

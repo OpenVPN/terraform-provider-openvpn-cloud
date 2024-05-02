@@ -2,6 +2,7 @@ package cloudconnexa
 
 import (
 	"context"
+
 	"github.com/openvpn/cloudconnexa-go-client/v2/cloudconnexa"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -54,6 +55,11 @@ func resourceConnector() *schema.Resource {
 				Computed:    true,
 				Description: "The IPV6 address of the connector.",
 			},
+			"profile": {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "OpenVPN profile of the connector.",
+			},
 		},
 	}
 }
@@ -76,6 +82,11 @@ func resourceConnectorCreate(ctx context.Context, d *schema.ResourceData, m inte
 		return diag.FromErr(err)
 	}
 	d.SetId(conn.Id)
+	profile, err := c.Connectors.GetProfile(conn.Id)
+	if err != nil {
+		return append(diags, diag.FromErr(err)...)
+	}
+	d.Set("profile", profile)
 	return append(diags, diag.Diagnostic{
 		Severity: diag.Warning,
 		Summary:  "Connector needs to be set up manually",
@@ -100,6 +111,11 @@ func resourceConnectorRead(ctx context.Context, d *schema.ResourceData, m interf
 		d.Set("network_item_id", connector.NetworkItemId)
 		d.Set("ip_v4_address", connector.IPv4Address)
 		d.Set("ip_v6_address", connector.IPv6Address)
+		profile, err := c.Connectors.GetProfile(connector.Id)
+		if err != nil {
+			return append(diags, diag.FromErr(err)...)
+		}
+		d.Set("profile", profile)
 	}
 	return diags
 }
@@ -114,9 +130,9 @@ func resourceConnectorDelete(ctx context.Context, d *schema.ResourceData, m inte
 	return diags
 }
 
-func getConnectorSlice(connectors []cloudconnexa.Connector, networkItemId string, connectorName string) []interface{} {
+func getConnectorSlice(connectors []cloudconnexa.Connector, networkItemId string, connectorName string, m interface{}) ([]interface{}, error) {
 	if len(connectors) == 0 {
-		return nil
+		return nil, nil
 	}
 	connectorsList := make([]interface{}, 1)
 	for _, c := range connectors {
@@ -129,9 +145,15 @@ func getConnectorSlice(connectors []cloudconnexa.Connector, networkItemId string
 			connector["vpn_region_id"] = c.VpnRegionId
 			connector["ip_v4_address"] = c.IPv4Address
 			connector["ip_v6_address"] = c.IPv6Address
+			client := m.(*cloudconnexa.Client)
+			profile, err := client.Connectors.GetProfile(c.Id)
+			if err != nil {
+				return nil, err
+			}
+			connector["profile"] = profile
 			connectorsList[0] = connector
 			break
 		}
 	}
-	return connectorsList
+	return connectorsList, nil
 }

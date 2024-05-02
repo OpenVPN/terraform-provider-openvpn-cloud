@@ -2,6 +2,7 @@ package cloudconnexa
 
 import (
 	"context"
+
 	"github.com/openvpn/cloudconnexa-go-client/v2/cloudconnexa"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -73,7 +74,7 @@ func resourceNetwork() *schema.Resource {
 							Default:     "Managed by Terraform.",
 							Description: "The default route description.",
 						},
-						"value": {
+						"subnet": {
 							Type:        schema.TypeString,
 							Required:    true,
 							Description: "The target value of the default route.",
@@ -134,6 +135,11 @@ func resourceNetwork() *schema.Resource {
 							Computed:    true,
 							Description: "The IPV6 address of the default connector.",
 						},
+						"profile": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "OpenVPN profile of the connector.",
+						},
 					},
 				},
 			},
@@ -181,6 +187,26 @@ func resourceNetworkCreate(ctx context.Context, d *schema.ResourceData, m interf
 		"subnet":      defaultRoute.Subnet,
 	}
 	d.Set("default_route", defaultRouteWithIdSlice)
+	connectorsList := make([]interface{}, 1)
+	connector := make(map[string]interface{})
+	connector["id"] = network.Connectors[0].Id
+	connector["name"] = network.Connectors[0].Name
+	connector["network_item_id"] = network.Connectors[0].NetworkItemId
+	connector["network_item_type"] = network.Connectors[0].NetworkItemType
+	connector["vpn_region_id"] = network.Connectors[0].VpnRegionId
+	connector["ip_v4_address"] = network.Connectors[0].IPv4Address
+	connector["ip_v6_address"] = network.Connectors[0].IPv6Address
+	client := m.(*cloudconnexa.Client)
+	profile, err := client.Connectors.GetProfile(network.Connectors[0].Id)
+	if err != nil {
+		return append(diags, diag.FromErr(err)...)
+	}
+	connector["profile"] = profile
+	connectorsList[0] = connector
+	err = d.Set("default_connector", connectorsList)
+	if err != nil {
+		return append(diags, diag.FromErr(err)...)
+	}
 	return append(diags, diag.Diagnostic{
 		Severity: diag.Warning,
 		Summary:  "The default connector for this network needs to be set up manually",
@@ -211,7 +237,11 @@ func resourceNetworkRead(ctx context.Context, d *schema.ResourceData, m interfac
 		if err != nil {
 			return append(diags, diag.FromErr(err)...)
 		}
-		err = d.Set("default_connector", getConnectorSlice(networkConnectors, network.Id, connectorName))
+		retrievedConnector, err := getConnectorSlice(networkConnectors, network.Id, connectorName, m)
+		if err != nil {
+			return append(diags, diag.FromErr(err)...)
+		}
+		err = d.Set("default_connector", retrievedConnector)
 		if err != nil {
 			return append(diags, diag.FromErr(err)...)
 		}
@@ -233,7 +263,7 @@ func resourceNetworkRead(ctx context.Context, d *schema.ResourceData, m interfac
 				},
 			}
 			if route.Type == "IP_V4" || route.Type == "IP_V6" {
-				defaultRoute[0]["value"] = route.Subnet
+				defaultRoute[0]["subnet"] = route.Subnet
 			}
 			d.Set("default_route", defaultRoute)
 		}
