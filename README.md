@@ -15,6 +15,21 @@
 - [Website Cloud Connexa](https://openvpn.net/cloud-vpn/?utm_source=terraform&utm_medium=docs)
 - [Terraform Registry](https://registry.terraform.io/providers/OpenVPN/openvpn-cloud/latest)
 
+# Repository Name Change Notification
+
+We are excited to announce that our repository has been renamed to better align with our product's name and has moved to a new location.
+
+## New Repository Name and URL
+The repository is now named **terraform-provider-cloudconnexa** and be located at [https://github.com/OpenVPN/terraform-provider-cloudconnexa](https://github.com/OpenVPN/terraform-provider-cloudconnexa). 
+We encourage all users to update their terraform files and local configurations to reflect this change.
+
+## Important Updates
+- **Resource Updates:** All resource names have been updated to align with the new repository. Please ensure to update your resources accordingly.
+- **Provider Updates:** The renamed provider has also been updated and is available in the [Terraform Registry](https://registry.terraform.io/providers/OpenVPN/cloudconnexa/latest). Please update your configurations to use the new provider by referencing its new address in your Terraform configurations.
+- **New Features and Updates:** All future features and updates will be released under the new provider name. We recommend migrating to the new provider for the latest functionalities and improvements.
+
+Thank you for your continued support and cooperation. If you have any questions or need assistance with the migration, please [open an issue](https://github.com/OpenVPN/terraform-provider-cloudconnexa/issues/new).
+
 ## Description
 
 The Terraform provider for [Cloud Connexa](https://openvpn.net/cloud-vpn/?utm_source=terraform&utm_medium=docs) allows teams to configure and update Cloud Connexa project parameters via their command line.
